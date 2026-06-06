@@ -1,0 +1,23 @@
+[project]
+name = "tradealgo-backend"
+version = "1.0.0"
+description = "Production automated US trading platform — backend (FastAPI)"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "ASYNC"]
+ignore = [
+    "B008",   # FastAPI uses Depends() in argument defaults
+    "B027",   # intentional optional lifecycle hooks on StrategyBase
+    "UP042",  # `class X(str, Enum)` is intentional for JSON-friendly enums
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+pythonpath = ["."]
+testpaths = ["tests"]

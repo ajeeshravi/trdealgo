@@ -226,6 +226,9 @@ export default function Dashboard() {
         // Trust the backend's `is_running` flag — it's resolved from
         // active StrategyRun rows, not the denormalised Strategy.status
         // mirror (which can drift if a stop crashed mid-flight).
+        // Backend only resolves running/stopped today, but "starting" is a
+        // valid transient state the UI renders, so keep the property typed as
+        // the full union (a plain shorthand would narrow it to running|stopped).
         const status: "running" | "starting" | "stopped" = s.is_running
           ? "running"
           : "stopped";
@@ -233,7 +236,7 @@ export default function Dashboard() {
           id: s.id,
           name: s.name ?? "—",
           type: s.strategy_type ?? s.type ?? s.kind ?? "—",
-          status,
+          status: status as "running" | "starting" | "stopped",
           pnl: s.total_pnl ?? 0,
           pnlPercent: s.pnl_pct ?? 0,
           winRate: s.win_rate ?? 0,

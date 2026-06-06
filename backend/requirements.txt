@@ -1,0 +1,48 @@
+# --- Web / async ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+websockets==14.1
+httpx==0.28.1
+python-multipart==0.0.20
+
+# --- Data / DB ---
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+alembic==1.14.0
+redis==5.2.1
+
+# --- Validation / settings ---
+pydantic==2.10.4
+pydantic-settings==2.7.1
+
+# --- Security ---
+passlib[argon2]==1.7.4
+pyjwt==2.10.1
+pyotp==2.9.0
+cryptography==44.0.0
+
+# --- Quant / numerics ---
+numpy==2.2.1
+pandas==2.2.3
+scipy==1.15.0
+
+# --- Brokers / market data (optional adapters) ---
+alpaca-py==0.33.1
+ib-insync==0.9.86
+polygon-api-client==1.14.5
+
+# --- Background jobs ---
+celery==5.4.0
+
+# --- AI ---
+anthropic==0.42.0
+openai==1.59.5
+
+# --- Observability ---
+structlog==24.4.0
+prometheus-client==0.21.1
+
+# --- Dev/test ---
+pytest==8.3.4
+pytest-asyncio==0.25.1
+ruff==0.8.6
