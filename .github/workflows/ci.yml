@@ -36,7 +36,9 @@ jobs:
         with:
           node-version: "20"
           cache: npm
-      - run: npm ci
+      # eslint-config-next@14 has an eslint ^7/^8 peer range while the project
+      # pins eslint ^9, so install must tolerate the legacy peer conflict.
+      - run: npm ci --legacy-peer-deps
       - run: npm run typecheck
       - run: npm run build
         env:
