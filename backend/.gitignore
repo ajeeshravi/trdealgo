@@ -9,5 +9,3 @@ venv/
 .mypy_cache/
 .coverage
 htmlcov/
-alembic/versions/*.py
-!alembic/versions/.gitkeep

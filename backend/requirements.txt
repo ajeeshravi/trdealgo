@@ -12,8 +12,9 @@ alembic==1.14.0
 redis==5.2.1
 
 # --- Validation / settings ---
-pydantic==2.10.4
+pydantic[email]==2.10.4
 pydantic-settings==2.7.1
+email-validator==2.2.0
 
 # --- Security ---
 passlib[argon2]==1.7.4

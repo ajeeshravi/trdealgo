@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const router = useRouter();
   useEffect(() => {
-    const t = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-    router.replace(t ? "/dashboard" : "/login");
+    // The US trading app is the default entry point.
+    router.replace("/us/dashboard");
   }, [router]);
   return null;
 }
