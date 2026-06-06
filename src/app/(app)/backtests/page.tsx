@@ -1,6 +1,6 @@
 "use client";
 import useSWR from "swr";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { api } from "@/lib/api";
@@ -8,7 +8,7 @@ import { fmtINR } from "@/lib/fmt";
 
 const fetcher = (u: string) => api.get(u).then((r) => r.data);
 
-export default function BacktestsPage() {
+function BacktestsPageInner() {
   const searchParams = useSearchParams();
   // Allow the Strategies page to deep-link here with `?strategy=<id>` so
   // clicking "Backtest" on a card pre-fills the dropdown instead of forcing
@@ -87,5 +87,14 @@ export default function BacktestsPage() {
         </table>
       </div>
     </div>
+  );
+}
+
+// useSearchParams() requires a Suspense boundary for static prerendering (Next 14).
+export default function BacktestsPage() {
+  return (
+    <Suspense fallback={null}>
+      <BacktestsPageInner />
+    </Suspense>
   );
 }
