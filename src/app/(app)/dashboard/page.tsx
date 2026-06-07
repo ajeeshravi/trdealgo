@@ -22,11 +22,9 @@ import IndexCard from "@/components/IndexCard";
 // the route's main shell is on screen.
 //   - StockHeatmap pulls in a custom treemap + Tooltip provider + a 17 KB
 //     IndexTechnicals component (six speedometer SVGs).
-//   - MarketSentimentWidget runs its own polling chain.
 //   - ExchangeSymbolPicker is ~30 KB on its own (cascading SWR fetches).
 //   - Recharts is ~120 KB and only used inside the equity-curve dialog.
 const StockHeatmap = dynamic(() => import("@/components/StockHeatmap"), { ssr: false });
-const MarketSentimentWidget = dynamic(() => import("@/components/MarketSentimentWidget"), { ssr: false });
 const ExchangeSymbolPicker = dynamic(
   () => import("@/components/ExchangeSymbolPicker").then((m) => m.ExchangeSymbolPicker),
   { ssr: false },
@@ -53,6 +51,34 @@ const fetcher = (url: string) => api.get(url).then((r) => r.data);
 // the broker margin endpoint is wired.
 const TOTAL_CAPITAL = 620000;
 
+// Session-date helpers in US/Eastern (the market session zone). A trading
+// "session" rolls over at 08:00 ET, so anything before that resolves to the
+// previous calendar day.
+const _ET_DATE_FMT = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" });
+const _ET_HOUR_FMT = new Intl.DateTimeFormat("en-US", {
+  timeZone: "America/New_York",
+  hour: "2-digit",
+  hour12: false,
+});
+function etDateKey(d: Date): string {
+  return _ET_DATE_FMT.format(d);
+}
+function etHour(d: Date): number {
+  const h = Number(_ET_HOUR_FMT.format(d));
+  return Number.isNaN(h) ? 0 : h % 24;
+}
+function etSessionKey(now: Date = new Date()): string {
+  const base = new Date(now);
+  if (etHour(base) < 8) base.setDate(base.getDate() - 1);
+  return etDateKey(base);
+}
+function etDateKeyFromIso(iso?: string | null): string | null {
+  if (!iso) return null;
+  const ms = Date.parse(iso);
+  if (Number.isNaN(ms)) return null;
+  return etDateKey(new Date(ms));
+}
+
 export default function Dashboard() {
   const router = useRouter();
 
@@ -76,9 +102,9 @@ export default function Dashboard() {
   // squared off today — without it the dashboard tile can never show the
   // day's realised number. The downstream `openPositions` map filters back
   // to qty != 0 for everything that needs open-only.
-  // Polls below are gated to "any Indian market open" (09:00-23:30 IST
-  // Mon-Fri) — positions/orders span NSE/BSE/F&O/MCX/CDS so we use the
-  // union session. Outside those hours nothing on screen changes, so the
+  // Polls below are gated to US market hours (incl. pre/after-hours, ET,
+  // Mon-Fri) via the "ANY" session group. Outside those hours nothing on
+  // screen changes, so the
   // polls collapse to 0 (= no refetch). The user can still reload to
   // force a refresh.
   const positionsPoll = useMarketPollInterval(15_000, "ANY");
@@ -108,23 +134,9 @@ export default function Dashboard() {
   // fill has arrived yet, so the tile zeros out cleanly for the new day.
   const allFilledOrders = filledOrdersData ?? [];
   const { filledOrders, sessionDateLabel } = useMemo(() => {
-    const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000;
-    const toIstDateKey = (iso?: string | null): string | null => {
-      if (!iso) return null;
-      const ms = Date.parse(iso);
-      if (Number.isNaN(ms)) return null;
-      const ist = new Date(ms + IST_OFFSET_MS);
-      return `${ist.getUTCFullYear()}-${String(ist.getUTCMonth() + 1).padStart(2, "0")}-${String(ist.getUTCDate()).padStart(2, "0")}`;
-    };
-    const nowIst = new Date(Date.now() + IST_OFFSET_MS);
-    // Step back one calendar day when we're still before the 08:00 IST
-    // cutover so the session resolves to yesterday's IST date.
-    if (nowIst.getUTCHours() < 8) {
-      nowIst.setUTCDate(nowIst.getUTCDate() - 1);
-    }
-    const sessionKey = `${nowIst.getUTCFullYear()}-${String(nowIst.getUTCMonth() + 1).padStart(2, "0")}-${String(nowIst.getUTCDate()).padStart(2, "0")}`;
+    const sessionKey = etSessionKey();
     return {
-      filledOrders: allFilledOrders.filter((o: any) => toIstDateKey(o.created_at) === sessionKey),
+      filledOrders: allFilledOrders.filter((o: any) => etDateKeyFromIso(o.created_at) === sessionKey),
       sessionDateLabel: sessionKey,
     };
   }, [allFilledOrders]);
@@ -383,7 +395,7 @@ export default function Dashboard() {
   // ---- Derived totals (used by the snapshot cards and dialogs) ----
   const profitPositions = openPositions.filter((p) => p.pnl >= 0);
   const lossPositions = openPositions.filter((p) => p.pnl < 0);
-  // Today's P&L follows the same 08:00 IST session rule as Today's
+  // Today's P&L follows the same 08:00 ET session rule as Today's
   // Trades — realised P&L is summed only from positions touched during
   // the current session, so the tile is consistent across the snapshot.
   // Unrealised stays live (current open positions reflect what's held
@@ -392,15 +404,7 @@ export default function Dashboard() {
   // Positions touched during the current session — used for both the
   // realised total and the "Closed Today" table in the P&L popup.
   const sessionPositions = useMemo(() => {
-    const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000;
-    const toIstDateKey = (iso?: string | null): string | null => {
-      if (!iso) return null;
-      const ms = Date.parse(iso);
-      if (Number.isNaN(ms)) return null;
-      const ist = new Date(ms + IST_OFFSET_MS);
-      return `${ist.getUTCFullYear()}-${String(ist.getUTCMonth() + 1).padStart(2, "0")}-${String(ist.getUTCDate()).padStart(2, "0")}`;
-    };
-    return positions.filter((p: any) => toIstDateKey(p.updated_at) === sessionDateLabel);
+    return positions.filter((p: any) => etDateKeyFromIso(p.updated_at) === sessionDateLabel);
   }, [positions, sessionDateLabel]);
   const todayRealized = sessionPositions.reduce(
     (sum: number, p: any) => sum + Number(p.realized_pnl ?? 0),
@@ -500,9 +504,6 @@ export default function Dashboard() {
 
       <StockHeatmap index={selectedIndex} open={heatmapOpen} onClose={() => setHeatmapOpen(false)} />
 
-      {/* Market Sentiment */}
-      <MarketSentimentWidget onCardClick={(c) => setActiveCard(c as CardType)} />
-
       {/* Portfolio Snapshot */}
       <div>
         <h2 className="text-xl font-bold mb-3">Portfolio Snapshot</h2>
@@ -516,9 +517,10 @@ export default function Dashboard() {
             <p className="text-xs text-muted-foreground mb-1">
               Today&apos;s Trades
               {(() => {
-                const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000;
-                const nowIst = new Date(Date.now() + IST_OFFSET_MS);
-                const todayKey = `${nowIst.getUTCFullYear()}-${String(nowIst.getUTCMonth() + 1).padStart(2, "0")}-${String(nowIst.getUTCDate()).padStart(2, "0")}`;
+                // Today's date in US/Eastern (the market session zone).
+                const todayKey = new Intl.DateTimeFormat("en-CA", {
+                  timeZone: "America/New_York",
+                }).format(new Date());
                 return sessionDateLabel && sessionDateLabel !== todayKey ? (
                   <span className="ml-1 text-[10px] opacity-60">({sessionDateLabel})</span>
                 ) : null;
@@ -832,9 +834,10 @@ export default function Dashboard() {
             <DialogTitle className="font-mono text-lg flex items-center gap-2">
               Today&apos;s P&amp;L
               {(() => {
-                const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000;
-                const nowIst = new Date(Date.now() + IST_OFFSET_MS);
-                const todayKey = `${nowIst.getUTCFullYear()}-${String(nowIst.getUTCMonth() + 1).padStart(2, "0")}-${String(nowIst.getUTCDate()).padStart(2, "0")}`;
+                // Today's date in US/Eastern (the market session zone).
+                const todayKey = new Intl.DateTimeFormat("en-CA", {
+                  timeZone: "America/New_York",
+                }).format(new Date());
                 return sessionDateLabel && sessionDateLabel !== todayKey ? (
                   <span className="text-xs font-normal text-muted-foreground">({sessionDateLabel})</span>
                 ) : null;

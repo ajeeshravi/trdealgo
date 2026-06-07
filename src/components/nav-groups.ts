@@ -1,19 +1,15 @@
 import {
   LayoutDashboard,
   Eye,
-  Grid3X3,
   ScanSearch,
   Hash,
   Radio,
   ListOrdered,
   Briefcase,
   Brain,
-  Building2,
   History,
   LineChart,
-  BarChart3,
   BookOpen,
-  Newspaper,
   Plug,
   SlidersHorizontal,
   Shield,
@@ -21,7 +17,6 @@ import {
   CandlestickChart,
   Sparkles,
   UserCircle,
-  Goal,
   Zap,
 } from "lucide-react";
 
@@ -57,8 +52,6 @@ export const NAV_GROUPS: NavGroup[] = [
     defaultHref: "/watchlists",
     tabs: [
       { label: "Watchlists", href: "/watchlists", icon: Eye },
-      { label: "Option Chain", href: "/option-chain", icon: Grid3X3 },
-      { label: "Intraday Charts", href: "/intraday-charts", icon: LineChart },
       { label: "Screener", href: "/screener", icon: ScanSearch },
       { label: "Symbols", href: "/symbols", icon: Hash },
       { label: "Live Feed", href: "/feed", icon: Radio },
@@ -81,14 +74,10 @@ export const NAV_GROUPS: NavGroup[] = [
     id: "insights",
     title: "Insights",
     icon: Sparkles,
-    defaultHref: "/tomorrow-plan",
+    defaultHref: "/analytics",
     tabs: [
-      { label: "Tomorrow's Plan", href: "/tomorrow-plan", icon: Goal },
       { label: "Analytics", href: "/analytics", icon: LineChart },
-      { label: "EOD Analysis", href: "/eod-analysis", icon: BarChart3 },
-      { label: "Institutional", href: "/institutional", icon: Building2 },
       { label: "Trade Journal", href: "/trade-journal", icon: BookOpen },
-      { label: "Corporate Announcements", href: "/market-news", icon: Newspaper },
     ],
   },
   {
