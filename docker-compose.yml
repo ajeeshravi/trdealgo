@@ -63,8 +63,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
+      args:
+        # Baked into the client bundle at build time (Next.js inlines
+        # NEXT_PUBLIC_* during `npm run build`). Browser → backend on :8000.
+        NEXT_PUBLIC_API_BASE: http://localhost:8000
+        NEXT_PUBLIC_WS_BASE: ws://localhost:8000
     ports:
       - "3000:3000"
     depends_on:
