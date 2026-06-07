@@ -122,6 +122,24 @@ class StrategyRun(Base):
     stopped_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     pnl: Mapped[Decimal] = mapped_column(Numeric(20, 2), default=0)
     realized_pnl: Mapped[Decimal] = mapped_column(Numeric(20, 2), default=0)
+    # Engine bookkeeping: paper positions per symbol + last-seen bar timestamps.
+    # Shape: {"positions": {sym: {"qty": float, "avg_price": float}}, "last_ts": {sym: iso}}
+    state: Mapped[dict] = mapped_column(JSONB, default=dict)
+
+
+class StrategyLog(Base):
+    __tablename__ = "strategy_logs"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    strategy_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("strategies.id", ondelete="CASCADE"), index=True
+    )
+    run_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    kind: Mapped[str] = mapped_column(String, default="run")  # run|signal|order
+    level: Mapped[str] = mapped_column(String, default="info")  # info|warn|error
+    message: Mapped[str] = mapped_column(Text, default="")
+    internal_symbol: Mapped[str | None] = mapped_column(String, nullable=True)
+    meta: Mapped[dict] = mapped_column(JSONB, default=dict)
 
 
 class Trigger(Base):

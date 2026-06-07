@@ -13,6 +13,7 @@ from app.models.trading import (  # noqa: F401
     RiskProfile,
     Strategy,
     StrategyInstance,
+    StrategyLog,
     StrategyRun,
     Trigger,
 )
@@ -31,6 +32,7 @@ __all__ = [
     "Strategy",
     "StrategyInstance",
     "StrategyRun",
+    "StrategyLog",
     "Trigger",
     "Backtest",
     "Notification",
