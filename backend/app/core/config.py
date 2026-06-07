@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     IBKR_PORT: int = 7497  # 7497 paper TWS, 4002 paper gateway
 
     # --- Market data vendors ---
+    # Alpaca account-level data keys (the dashboard snapshot / bars feed). These
+    # are platform defaults; per-user broker creds still live encrypted in the DB.
+    ALPACA_API_KEY: str = ""
+    ALPACA_API_SECRET: str = ""
     POLYGON_API_KEY: str = ""
     DATABENTO_API_KEY: str = ""
 

@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
     # Bridge realtime Redis topics to WS clients.
     bridge = asyncio.create_task(
         manager.run_redis_bridge(
-            ["md.quotes.*", "orders.events", "positions.updates", "risk.events"]
+            ["md.quotes.*", "orders.events", "positions.updates", "risk.events", "notifications"]
         )
     )
     try:
@@ -100,6 +100,38 @@ def create_app() -> FastAPI:
                 if msg.get("type") == "subscribe":
                     await manager.subscribe(ws, msg.get("channels", []))
                     await ws.send_json({"type": "subscribed", "channels": msg.get("channels", [])})
+        except WebSocketDisconnect:
+            await manager.disconnect(ws)
+
+    @app.websocket(settings.API_V1_PREFIX + "/ws/stream")
+    async def ws_stream(ws: WebSocket) -> None:
+        """Authenticated push stream (notifications, order/position/risk events).
+
+        The frontend connects with `?token=<access_token>` and only listens.
+        We validate the token, then subscribe the socket to the realtime
+        channels so any future producer reaches it. Until producers exist the
+        socket simply stays open (no error spam, SWR polling remains the
+        source of truth).
+        """
+        from app.core.security import decode_token
+
+        token = ws.query_params.get("token", "")
+        try:
+            payload = decode_token(token)
+            if payload.get("type") != "access":
+                raise ValueError("wrong token type")
+        except Exception:  # noqa: BLE001 - any decode failure rejects the socket
+            await ws.close(code=1008)
+            return
+        await manager.connect(ws)
+        await manager.subscribe(
+            ws, ["notifications", "orders.events", "positions.updates", "risk.events"]
+        )
+        await ws.send_json({"type": "connected"})
+        try:
+            while True:
+                # We don't expect client messages; receive to detect disconnect.
+                await ws.receive_text()
         except WebSocketDisconnect:
             await manager.disconnect(ws)
 

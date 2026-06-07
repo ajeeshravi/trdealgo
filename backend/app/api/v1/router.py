@@ -6,6 +6,7 @@ from app.api.v1.endpoints import (
     auth,
     backtests,
     brokers,
+    market,
     market_data,
     orders,
     positions,
@@ -23,5 +24,6 @@ api_router.include_router(risk.router)
 api_router.include_router(strategies.router)
 api_router.include_router(triggers.router)
 api_router.include_router(backtests.router)
+api_router.include_router(market.router)
 api_router.include_router(market_data.router)
 api_router.include_router(ai.router)
