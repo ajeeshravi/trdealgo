@@ -11,17 +11,35 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from app.api.deps import CurrentUser, get_current_user
+from app.services import us_symbols
 
 router = APIRouter(prefix="/symbols", tags=["symbols"])
 
 
 def _equity_row(ticker: str) -> dict:
     t = ticker.strip().upper()
+    known = us_symbols.get(t)
+    segment = known["segment"] if known else "EQUITY"
     return {
         "internal_symbol": t,
         "trading_symbol": t,
         "underlying": t,
-        "segment": "EQUITY",
+        "segment": segment,
+        "exchange": "US",
+        "expiry": None,
+        "strike": None,
+        "option_type": None,
+        "lot_size": 1,
+        "tick_size": 0.01,
+    }
+
+
+def _row_from_master(m: dict) -> dict:
+    return {
+        "internal_symbol": m["internal_symbol"],
+        "trading_symbol": m["trading_symbol"],
+        "underlying": m["underlying"],
+        "segment": m["segment"],
         "exchange": "US",
         "expiry": None,
         "strike": None,
@@ -36,9 +54,9 @@ def _equity_row(ticker: str) -> dict:
 async def filters(current: CurrentUser = Depends(get_current_user)):
     return {
         "exchanges": ["US"],
-        "segments": ["EQUITY", "OPTION"],
+        "segments": ["EQUITY", "ETF", "OPTION"],
         "option_types": ["CALL", "PUT"],
-        "total": 0,
+        "total": len(us_symbols.UNIVERSE),
     }
 
 
@@ -54,10 +72,13 @@ async def search(
     q = (q or "").strip()
     if len(q) < 1:
         return []
-    # Equity passthrough: surface the typed ticker as a usable symbol.
-    if not segment or segment.upper() == "EQUITY":
-        return [_equity_row(q)]
-    return []
+    # Curated US universe first (ticker prefix or company name match)...
+    matches = [_row_from_master(m) for m in us_symbols.search(q, limit=limit, segment=segment)]
+    have = {m["internal_symbol"] for m in matches}
+    # ...then an equity passthrough so any typed ticker is still usable.
+    if (not segment or segment.upper() in ("EQUITY", "ETF")) and q.upper() not in have:
+        matches.append(_equity_row(q))
+    return matches[:limit]
 
 
 @router.get("/underlyings")
@@ -68,7 +89,12 @@ async def underlyings(
     current: CurrentUser = Depends(get_current_user),
 ):
     q = (q or "").strip().upper()
-    return [q] if q else []
+    if not q:
+        return []
+    found = us_symbols.underlyings(q, limit)
+    if q not in found:
+        found.append(q)
+    return found[:limit]
 
 
 class ResolveRequest(BaseModel):
