@@ -76,6 +76,14 @@ class AlpacaBroker(BrokerBase):
         try:
             await self.get_account()
         except httpx.HTTPStatusError as exc:
+            if exc.response is not None and exc.response.status_code == 401:
+                env = "paper" if "paper-api" in self._base else "live"
+                raise BrokerConnectionError(
+                    f"Alpaca rejected these keys on the {env} endpoint (401). "
+                    "Alpaca paper and live use SEPARATE keys — paper keys start with "
+                    "'PK' (from the Alpaca paper dashboard), live keys with 'AK'. "
+                    f"Use {env} keys for this account."
+                ) from exc
             raise BrokerConnectionError(f"alpaca auth failed: {exc}") from exc
         await self._emit_status("connected")
         log.info("alpaca.connected", paper=self.paper)
