@@ -11,9 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import CurrentUser, require_roles
 from app.core.database import get_db
+from app.core.logging import get_logger
 from app.models.trading import Backtest
 
 router = APIRouter(prefix="/backtests", tags=["backtests"])
+log = get_logger("backtests")
 
 
 class CreateBacktestRequest(BaseModel):
@@ -71,4 +73,12 @@ async def create_backtest(
     )
     db.add(bt)
     await db.flush()
+    # Dispatch to the Celery worker. If the broker is unreachable, the row
+    # simply stays QUEUED and can be retried — the request still succeeds.
+    try:
+        from app.tasks.jobs import run_backtest
+
+        run_backtest.delay(str(bt.id))
+    except Exception as exc:  # noqa: BLE001
+        log.warning("backtest.dispatch_failed", error=str(exc))
     return _serialize(bt)
