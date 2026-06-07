@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     # are platform defaults; per-user broker creds still live encrypted in the DB.
     ALPACA_API_KEY: str = ""
     ALPACA_API_SECRET: str = ""
+    # Free/paper Alpaca accounts only have the IEX data feed; SIP needs a paid
+    # subscription. Default to iex so prices/bars work out of the box.
+    ALPACA_DATA_FEED: str = "iex"
     POLYGON_API_KEY: str = ""
     DATABENTO_API_KEY: str = ""
 
