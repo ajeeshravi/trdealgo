@@ -85,7 +85,7 @@ async def snapshot(
         return {s: dict(_EMPTY_ROW) for s in syms}
     engine = _engine()
     rows = await asyncio.gather(*(_snapshot_one(engine, s) for s in syms))
-    return dict(zip(syms, rows))
+    return dict(zip(syms, rows, strict=False))
 
 
 @router.get("/ltp")
