@@ -1,7 +1,7 @@
 """Strategy catalog, custom-code validation, CRUD and run lifecycle."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -221,7 +221,7 @@ async def start_strategy(
         broker_account_id=body.broker_account_id,
         is_paper=body.is_paper,
         status="PAPER" if body.is_paper else "LIVE",
-        started_at=datetime.now(timezone.utc),
+        started_at=datetime.now(UTC),
     )
     db.add(run)
     s.status = run.status
@@ -241,7 +241,7 @@ async def stop_strategy(
     if run is None or run.strategy_id != s.id:
         raise HTTPException(404, "run not found")
     run.status = "STOPPED"
-    run.stopped_at = datetime.now(timezone.utc)
+    run.stopped_at = datetime.now(UTC)
     # If no other live/paper run remains, mark the strategy stopped.
     others = (
         await db.execute(
