@@ -7,6 +7,13 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# NEXT_PUBLIC_* vars are inlined into the client bundle at build time, so the
+# API/WS origins must be present here (not just at runtime). They point at the
+# backend's published host ports for local dev; override per environment.
+ARG NEXT_PUBLIC_API_BASE=http://localhost:8000
+ARG NEXT_PUBLIC_WS_BASE=ws://localhost:8000
+ENV NEXT_PUBLIC_API_BASE=$NEXT_PUBLIC_API_BASE
+ENV NEXT_PUBLIC_WS_BASE=$NEXT_PUBLIC_WS_BASE
 RUN npm run build
 
 FROM node:20-alpine AS runner
