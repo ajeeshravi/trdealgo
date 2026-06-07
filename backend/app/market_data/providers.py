@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import AsyncIterator
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 
 import httpx
@@ -15,6 +15,15 @@ from app.market_data.base import Bar, MarketDataProvider, Quote
 log = get_logger("market_data")
 
 _TF_ALPACA = {"1m": "1Min", "5m": "5Min", "15m": "15Min", "1h": "1Hour", "1d": "1Day"}
+
+
+def _rfc3339(dt: datetime) -> str:
+    """Alpaca requires RFC-3339 timestamps. Treat naive datetimes as UTC and
+    always emit a trailing 'Z' — a bare `datetime.utcnow().isoformat()` (no zone)
+    is rejected with 400."""
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=UTC)
+    return dt.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class AlpacaDataProvider(MarketDataProvider):
@@ -34,8 +43,8 @@ class AlpacaDataProvider(MarketDataProvider):
                 f"/v2/stocks/{symbol}/bars",
                 params={
                     "timeframe": _TF_ALPACA.get(timeframe, "1Day"),
-                    "start": start.isoformat(),
-                    "end": end.isoformat(),
+                    "start": _rfc3339(start),
+                    "end": _rfc3339(end),
                     "limit": 10000,
                     "feed": settings.ALPACA_DATA_FEED,
                 },
