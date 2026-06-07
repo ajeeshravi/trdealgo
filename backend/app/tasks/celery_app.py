@@ -9,6 +9,8 @@ celery_app = Celery(
     "tradealgo",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
+    # Import the task module on startup so tasks are registered with the worker.
+    include=["app.tasks.jobs"],
 )
 celery_app.conf.update(
     task_serializer="json",

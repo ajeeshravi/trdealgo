@@ -25,5 +25,9 @@ def run_eod_analytics() -> str:
 @celery_app.task(name="app.tasks.jobs.run_backtest", bind=True)
 def run_backtest(self, backtest_id: str) -> str:  # noqa: ANN001
     """Execute a queued backtest and persist metrics."""
+    import asyncio
+
+    from app.backtesting.runner import run_backtest_for
+
     log.info("task.run_backtest", backtest_id=backtest_id)
-    return "ok"
+    return asyncio.run(run_backtest_for(backtest_id))
