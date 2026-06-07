@@ -2,9 +2,8 @@
 from __future__ import annotations
 
 import uuid
-from decimal import Decimal
-
 from datetime import date, datetime
+from decimal import Decimal
 
 from sqlalchemy import (
     ARRAY,

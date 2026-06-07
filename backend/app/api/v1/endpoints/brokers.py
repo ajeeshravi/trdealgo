@@ -21,7 +21,7 @@ the credentials by fetching the account".
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -312,7 +312,7 @@ async def login_account(
         account.status = "error"
         await db.flush()
         raise HTTPException(502, f"broker login failed: {exc}") from exc
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     account.status = "connected"
     account.last_login_at = now
     account.session_valid_until = now + timedelta(hours=12)

@@ -1,4 +1,10 @@
 """SQLAlchemy ORM models. Importing this package registers all tables."""
+from app.models.platform import (  # noqa: F401
+    AppSetting,
+    Notification,
+    NotificationPreference,
+    Watchlist,
+)
 from app.models.trading import (  # noqa: F401
     Backtest,
     BrokerAccount,
@@ -9,12 +15,6 @@ from app.models.trading import (  # noqa: F401
     StrategyInstance,
     StrategyRun,
     Trigger,
-)
-from app.models.platform import (  # noqa: F401
-    AppSetting,
-    Notification,
-    NotificationPreference,
-    Watchlist,
 )
 from app.models.user import ApiKey, MfaSecret, Role, User, UserRole  # noqa: F401
 
