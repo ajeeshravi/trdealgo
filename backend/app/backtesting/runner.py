@@ -14,12 +14,10 @@ import pandas as pd
 
 from app.backtesting import metrics
 from app.backtesting.engine import BacktestConfig, Backtester
-from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.logging import get_logger
-from app.market_data.engine import MarketDataEngine
-from app.market_data.providers import AlpacaDataProvider, PolygonDataProvider
 from app.models.trading import Backtest, Strategy
+from app.services.market_source import data_engine_for_user
 from app.strategies.nocode import NoCodeStrategy
 
 log = get_logger("backtest")
@@ -86,15 +84,6 @@ def _bars_to_df(bars: list) -> pd.DataFrame:
     return df.set_index("ts").sort_index()
 
 
-def _engine() -> MarketDataEngine:
-    provider = PolygonDataProvider() if settings.POLYGON_API_KEY else AlpacaDataProvider()
-    return MarketDataEngine(provider)
-
-
-def _vendor_configured() -> bool:
-    return bool(settings.POLYGON_API_KEY or settings.ALPACA_API_KEY)
-
-
 async def run_backtest_for(backtest_id: str) -> str:
     """Execute one queued backtest; persist COMPLETED/FAILED + summary."""
     async with SessionLocal() as db:
@@ -111,15 +100,16 @@ async def run_backtest_for(backtest_id: str) -> str:
                 raise ValueError("strategy has no symbols to backtest")
             symbol = symbols[0]
 
-            if not _vendor_configured():
+            engine = await data_engine_for_user(db, strategy.user_id)
+            if engine is None:
                 raise RuntimeError(
-                    "No market-data vendor configured — set ALPACA_API_KEY/SECRET "
-                    "or POLYGON_API_KEY to run backtests on real data."
+                    "No market-data source — connect an Alpaca account on the Brokers "
+                    "page (its keys power backtests too)."
                 )
 
             start = datetime.combine(bt.from_date, time.min)
             end = datetime.combine(bt.to_date, time.max)
-            bars = await _engine().get_bars(symbol, bt.timeframe, start, end)
+            bars = await engine.get_bars(symbol, bt.timeframe, start, end)
             df = _bars_to_df(bars)
             if df.empty or len(df) < 30:
                 raise ValueError(f"not enough bars for {symbol} in the requested range")
