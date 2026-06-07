@@ -9,5 +9,4 @@ venv/
 .mypy_cache/
 .coverage
 htmlcov/
-alembic/versions/*.py
-!alembic/versions/.gitkeep
+# NOTE: alembic migration files MUST be version-controlled — do not ignore them.

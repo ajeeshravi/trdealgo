@@ -16,7 +16,7 @@ import useSWR from "swr";
 import toast from "react-hot-toast";
 import clsx from "clsx";
 import { api } from "@/lib/api";
-import { fmtINR, fmtTs } from "@/lib/fmt";
+import { fmtUSD, fmtTs } from "@/lib/fmt";
 import { useMarketPollInterval } from "@/lib/marketHours";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
@@ -312,9 +312,9 @@ export default function EditStrategyPage({ params }: { params: { id: string } })
                   </span>
                 </td>
                 <td className={clsx("text-right", r.pnl >= 0 ? "text-primary" : "text-danger")}>
-                  {fmtINR(r.pnl)}
+                  {fmtUSD(r.pnl)}
                 </td>
-                <td className="text-right text-muted-foreground">{fmtINR(r.realized_pnl)}</td>
+                <td className="text-right text-muted-foreground">{fmtUSD(r.realized_pnl)}</td>
                 <td>
                   {(r.status === "LIVE" || r.status === "PAPER") && (
                     <button className="btn-outline text-xs" onClick={() => stopRun(r.id)}>

@@ -25,7 +25,7 @@ import toast from "react-hot-toast";
 import clsx from "clsx";
 import { BarChart3, Eye, Pencil, Play, Square, Trash2, Users, Zap } from "lucide-react";
 import { api } from "@/lib/api";
-import { fmtINR, prettySymbol } from "@/lib/fmt";
+import { fmtUSD, prettySymbol } from "@/lib/fmt";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useLivePrices } from "@/lib/useLivePrices";
 import { useMarketPollInterval } from "@/lib/marketHours";
@@ -601,7 +601,7 @@ function StrategyCardImpl({ strategy: s, brokers, onChanged, onDelete }: Props) 
             {isPlanBased
               ? "PLAN · daily @ 09:15 IST"
               : `${s.kind} · ${s.timeframe_min ? `${s.timeframe_min}m` : "tick"}`}
-            {s.capital > 0 && ` · ${fmtINR(s.capital)}`}
+            {s.capital > 0 && ` · ${fmtUSD(s.capital)}`}
           </div>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
@@ -704,7 +704,7 @@ function StrategyCardImpl({ strategy: s, brokers, onChanged, onDelete }: Props) 
                 <span className="text-gray-300 truncate">{label}</span>
                 {isRunning && ltp !== undefined ? (
                   <span className="px-1.5 py-0.5 rounded bg-primary/20 text-primary shrink-0">
-                    ₹{ltp.toFixed(2)}
+                    ${ltp.toFixed(2)}
                   </span>
                 ) : (
                   <span className="text-muted-foreground shrink-0">—</span>
@@ -798,7 +798,7 @@ function StrategyCardImpl({ strategy: s, brokers, onChanged, onDelete }: Props) 
                 totalPnl >= 0 ? "text-primary" : "text-danger",
               )}
             >
-              P&L {fmtINR(totalPnl)}
+              P&L {fmtUSD(totalPnl)}
             </span>
           </div>
         </div>

@@ -12,7 +12,7 @@ interface Props {
 const fmtNum = (n: number | null | undefined, frac = 2) =>
   n === undefined || n === null
     ? "—"
-    : n.toLocaleString("en-IN", { minimumFractionDigits: frac, maximumFractionDigits: frac });
+    : n.toLocaleString("en-US", { minimumFractionDigits: frac, maximumFractionDigits: frac });
 
 /**
  * Live price card.

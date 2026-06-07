@@ -9,10 +9,10 @@
  * Real backends used:
  *   - /api/v1/market/ltp?symbols=…              → live LTPs
  *   - /api/v1/eod/indices/{trade_date}          → prev_close / OHLC
- *   - /api/v1/eod/pcr/NIFTY/{trade_date}        → PCR
+ *   - /api/v1/eod/pcr/SPY/{trade_date}        → PCR
  *   - /api/v1/eod/breadth/{trade_date}          → advances / declines
  *   - /api/v1/institutional/cash-flow/summary   → FII / DII totals
- *   - /api/v1/eod/candles/NSE_INDIAVIX_IDX?days=10 → VIX history
+ *   - /api/v1/eod/candles/VIXY?days=10 → VIX history
  *   - /api/v1/notifications                     → news ticker fallback
  *
  * For VIX live change% we approximate using `(LTP - prev_close)`. If
@@ -23,26 +23,24 @@ import { api } from "@/lib/api";
 import type { MarketIndex, MarketSentiment, NewsAnnouncement } from "@/lib/marketTypes";
 
 /**
- * Canonical index roster — Indian markets.
+ * Canonical index roster — US markets.
  *
  *  - `primary: true`  → shown in the dashboard's top index strip (5 cards).
- *  - `primary: false` → revealed when "View All" is toggled (~23 sectors).
+ *  - `primary: false` → revealed when "View All" is toggled.
  *
- *  `sector_key` matches the corresponding entry in
- *  `backend/seed_data/sector_stock_mapping.json` and drives the heatmap
- *  drill-down. Indices without a seeded constituent list (yet) leave it
- *  null — the StockHeatmap shows a clear "No constituent list seeded"
- *  message until the weekly Celery refresh fills the JSON in.
+ *  US cash indices (S&P 500, Dow, Nasdaq) aren't directly tradable, and the
+ *  Alpaca/IBKR data feeds quote plain tickers, so each row uses a liquid ETF
+ *  proxy as its `internal_symbol` (SPY for the S&P 500, QQQ for the Nasdaq
+ *  100, the SPDR sector ETFs for sectors, etc.). When a true index feed is
+ *  wired up later, swap the symbols here — nothing else depends on the proxy.
  *
- *  `internal_symbol` follows the project's `<EXCH>_<TICKER>_IDX`
- *  convention (see `app.services.symbols.aliases.INDEX_ALIASES`). When a
- *  ticker isn't in the alias table, NSE's published code is used
- *  (`NIFTYIT`, `NIFTYAUTO`, …); if the broker feed publishes a different
- *  spelling we extend the alias table rather than this list.
+ *  `sector_key` is the GICS sector name; it drives the heatmap drill-down
+ *  once a constituent list is seeded. Rows without one leave it undefined and
+ *  the StockHeatmap shows a calm "No constituent list seeded" message.
  *
  *  Order matters: array iteration drives card rendering order.
  */
-export const INDIAN_INDEX_REGISTRY: Array<{
+export const US_INDEX_REGISTRY: Array<{
   id: string;
   name: string;
   short?: string;
@@ -51,49 +49,30 @@ export const INDIAN_INDEX_REGISTRY: Array<{
   sector_key?: string;
 }> = [
   // -------- Primary (top strip) --------
-  { id: "nifty50",   name: "NIFTY 50",        short: "NIFTY",        internal_symbol: "NSE_NIFTY50_IDX",    primary: true, sector_key: "Nifty 50" },
-  { id: "banknifty", name: "BANK NIFTY",      short: "BANKNIFTY",    internal_symbol: "NSE_NIFTYBANK_IDX",  primary: true, sector_key: "Nifty Bank" },
-  { id: "sensex",    name: "SENSEX",          short: "SENSEX",       internal_symbol: "BSE_SENSEX_IDX",     primary: true, sector_key: "SENSEX" },
-  { id: "finnifty",  name: "FIN NIFTY",       short: "FINNIFTY",     internal_symbol: "NSE_FINNIFTY_IDX",   primary: true, sector_key: "NIFTY FIN SERVICE" },
-  { id: "midselect", name: "MID CAP SELECT",  short: "MIDSELECT",    internal_symbol: "NSE_MIDCPNIFTY_IDX", primary: true, sector_key: "Nifty Mid Select" },
+  { id: "sp500",    name: "S&P 500",        short: "SPX",     internal_symbol: "SPY",  primary: true,  sector_key: "S&P 500" },
+  { id: "dow",      name: "DOW JONES",      short: "DJIA",    internal_symbol: "DIA",  primary: true,  sector_key: "Dow 30" },
+  { id: "nasdaq",   name: "NASDAQ 100",     short: "NDX",     internal_symbol: "QQQ",  primary: true,  sector_key: "Nasdaq 100" },
+  { id: "russell",  name: "RUSSELL 2000",   short: "RUT",     internal_symbol: "IWM",  primary: true },
+  { id: "vix",      name: "VOLATILITY (VIX)", short: "VIX",   internal_symbol: "VIXY", primary: true },
 
-  // -------- Sectoral (View All) --------
-  { id: "nifty_it",        name: "NIFTY IT",                short: "IT",           internal_symbol: "NSE_NIFTYIT_IDX",                primary: false, sector_key: "Nifty IT" },
-  { id: "nifty_auto",      name: "NIFTY AUTO",              short: "AUTO",         internal_symbol: "NSE_NIFTYAUTO_IDX",              primary: false, sector_key: "Nifty Auto" },
-  { id: "nifty_pharma",    name: "NIFTY PHARMA",            short: "PHARMA",       internal_symbol: "NSE_NIFTYPHARMA_IDX",            primary: false, sector_key: "Nifty Pharma" },
-  { id: "nifty_fmcg",      name: "NIFTY FMCG",              short: "FMCG",         internal_symbol: "NSE_NIFTYFMCG_IDX",              primary: false, sector_key: "Nifty FMCG" },
-  { id: "nifty_metal",     name: "NIFTY METAL",             short: "METAL",        internal_symbol: "NSE_NIFTYMETAL_IDX",             primary: false, sector_key: "Nifty Metal" },
-  { id: "nifty_realty",    name: "NIFTY REALTY",            short: "REALTY",       internal_symbol: "NSE_NIFTYREALTY_IDX",            primary: false, sector_key: "Nifty Realty" },
-  { id: "nifty_media",     name: "NIFTY MEDIA",             short: "MEDIA",        internal_symbol: "NSE_NIFTYMEDIA_IDX",             primary: false, sector_key: "Nifty Media" },
-  { id: "nifty_psubank",   name: "NIFTY PSU BANK",          short: "PSUBANK",      internal_symbol: "NSE_NIFTYPSUBANK_IDX",           primary: false, sector_key: "Nifty PSU Bank" },
-  { id: "nifty_pvtbank",   name: "NIFTY PVT BANK",          short: "PVTBANK",      internal_symbol: "NSE_NIFTYPVTBANK_IDX",           primary: false, sector_key: "Nifty Private Bank" },
-  { id: "nifty_healthcare",name: "NIFTY HEALTHCARE",        short: "HEALTH",       internal_symbol: "NSE_NIFTYHEALTHCARE_IDX",        primary: false, sector_key: "Nifty Healthcare" },
-  { id: "nifty_consumer",  name: "NIFTY CONS. DURABLES",    short: "CONSDUR",      internal_symbol: "NSE_NIFTYCONSRDURBL_IDX",        primary: false, sector_key: "Nifty Consumer Durables" },
-  { id: "nifty_oilgas",    name: "NIFTY OIL & GAS",         short: "OIL&GAS",      internal_symbol: "NSE_NIFTYOILANDGAS_IDX",         primary: false, sector_key: "Nifty Oil AND Gas" },
-
-  // -------- Thematic --------
-  { id: "nifty_commodities", name: "NIFTY COMMODITIES",     short: "COMM",         internal_symbol: "NSE_NIFTYCOMMODITIES_IDX",       primary: false, sector_key: "Nifty Commodities" },
-  { id: "nifty_energy",      name: "NIFTY ENERGY",          short: "ENERGY",       internal_symbol: "NSE_NIFTYENERGY_IDX",            primary: false, sector_key: "Nifty Energy" },
-  { id: "nifty_infra",       name: "NIFTY INFRA",           short: "INFRA",        internal_symbol: "NSE_NIFTYINFRA_IDX",             primary: false, sector_key: "Nifty Infra" },
-  { id: "nifty_mnc",         name: "NIFTY MNC",             short: "MNC",          internal_symbol: "NSE_NIFTYMNC_IDX",               primary: false, sector_key: "Nifty MNC" },
-  { id: "nifty_pse",         name: "NIFTY PSE",             short: "PSE",          internal_symbol: "NSE_NIFTYPSE_IDX",               primary: false, sector_key: "Nifty PSE" },
-  { id: "nifty_cpse",        name: "NIFTY CPSE",            short: "CPSE",         internal_symbol: "NSE_NIFTYCPSE_IDX",              primary: false, sector_key: "Nifty CPSE" },
-  { id: "nifty_services",    name: "NIFTY SERVICES",        short: "SERV",         internal_symbol: "NSE_NIFTYSERVSECTOR_IDX",        primary: false, sector_key: "Nifty Services Sector" },
-  { id: "nifty_consumption", name: "NIFTY CONSUMPTION",     short: "CONSMPT",      internal_symbol: "NSE_NIFTYCONSUMPTION_IDX",       primary: false, sector_key: "Nifty Consumption" },
+  // -------- Sectoral (View All) — SPDR Select Sector ETFs --------
+  { id: "tech",       name: "TECHNOLOGY",             short: "XLK",  internal_symbol: "XLK",  primary: false, sector_key: "Information Technology" },
+  { id: "financials", name: "FINANCIALS",            short: "XLF",  internal_symbol: "XLF",  primary: false, sector_key: "Financials" },
+  { id: "health",     name: "HEALTH CARE",           short: "XLV",  internal_symbol: "XLV",  primary: false, sector_key: "Health Care" },
+  { id: "energy",     name: "ENERGY",                short: "XLE",  internal_symbol: "XLE",  primary: false, sector_key: "Energy" },
+  { id: "discretion", name: "CONSUMER DISCRETIONARY", short: "XLY", internal_symbol: "XLY",  primary: false, sector_key: "Consumer Discretionary" },
+  { id: "staples",    name: "CONSUMER STAPLES",      short: "XLP",  internal_symbol: "XLP",  primary: false, sector_key: "Consumer Staples" },
+  { id: "industrials",name: "INDUSTRIALS",           short: "XLI",  internal_symbol: "XLI",  primary: false, sector_key: "Industrials" },
+  { id: "materials",  name: "MATERIALS",             short: "XLB",  internal_symbol: "XLB",  primary: false, sector_key: "Materials" },
+  { id: "utilities",  name: "UTILITIES",             short: "XLU",  internal_symbol: "XLU",  primary: false, sector_key: "Utilities" },
+  { id: "realestate", name: "REAL ESTATE",           short: "XLRE", internal_symbol: "XLRE", primary: false, sector_key: "Real Estate" },
+  { id: "comm",       name: "COMMUNICATION SVCS",    short: "XLC",  internal_symbol: "XLC",  primary: false, sector_key: "Communication Services" },
 
   // -------- Broad market --------
-  { id: "nifty100",        name: "NIFTY 100",               short: "NIFTY100",     internal_symbol: "NSE_NIFTY100_IDX",               primary: false, sector_key: "Nifty 100" },
-  { id: "nifty200",        name: "NIFTY 200",               short: "NIFTY200",     internal_symbol: "NSE_NIFTY200_IDX",               primary: false, sector_key: "Nifty 200" },
-  { id: "nifty500",        name: "NIFTY 500",               short: "NIFTY500",     internal_symbol: "NSE_NIFTY500_IDX",               primary: false, sector_key: "Nifty 500" },
-  { id: "next50",          name: "NIFTY NEXT 50",           short: "NEXT50",       internal_symbol: "NSE_NIFTYNXT50_IDX",             primary: false, sector_key: "Nifty Next 50" },
-  { id: "midcap50",        name: "NIFTY MIDCAP 50",         short: "MIDCAP50",     internal_symbol: "NSE_NIFTYMIDCAP50_IDX",          primary: false, sector_key: "Nifty Midcap 50" },
-  { id: "midcap100",       name: "NIFTY MIDCAP 100",        short: "MIDCAP100",    internal_symbol: "NSE_NIFTYMIDCAP100_IDX",         primary: false, sector_key: "Nifty Midcap 100" },
-  { id: "smallcap50",      name: "NIFTY SMALLCAP 50",       short: "SMCAP50",      internal_symbol: "NSE_NIFTYSMLCAP50_IDX",          primary: false, sector_key: "Nifty Smallcap 50" },
-  { id: "smallcap100",     name: "NIFTY SMALLCAP 100",      short: "SMCAP100",     internal_symbol: "NSE_NIFTYSMLCAP100_IDX",         primary: false, sector_key: "Nifty Smallcap 100" },
-
-  // -------- Volatility / others --------
-  { id: "vix",       name: "INDIA VIX",     short: "VIX",       internal_symbol: "NSE_INDIAVIX_IDX",   primary: false },
-  { id: "bankex",    name: "BSE BANKEX",    short: "BANKEX",    internal_symbol: "BSE_BANKEX_IDX",     primary: false },
+  { id: "total_market", name: "TOTAL MARKET",       short: "VTI",  internal_symbol: "VTI",  primary: false },
+  { id: "midcap",       name: "S&P MIDCAP 400",     short: "MID",  internal_symbol: "MDY",  primary: false },
+  { id: "smallcap",     name: "S&P SMALLCAP 600",   short: "SML",  internal_symbol: "IJR",  primary: false },
+  { id: "nasdaq_comp",  name: "NASDAQ COMPOSITE",   short: "COMP", internal_symbol: "ONEQ", primary: false },
 ];
 
 const TODAY_ISO = () => new Date().toISOString().slice(0, 10);
@@ -146,7 +125,7 @@ interface SnapshotRow {
 }
 
 async function fetchMarketIndices(): Promise<MarketIndex[]> {
-  const symbols = INDIAN_INDEX_REGISTRY.map((r) => r.internal_symbol);
+  const symbols = US_INDEX_REGISTRY.map((r) => r.internal_symbol);
   // /market/snapshot is the dashboard's one-call endpoint: it tries
   // Redis (live tick) → broker REST quotes → most recent 1d candle.
   // Each row tells us its `source` so the UI can render a tiny
@@ -156,7 +135,7 @@ async function fetchMarketIndices(): Promise<MarketIndex[]> {
     {},
   );
 
-  return INDIAN_INDEX_REGISTRY.map((r): MarketIndex => {
+  return US_INDEX_REGISTRY.map((r): MarketIndex => {
     const row = snap[r.internal_symbol];
     const live = row?.ltp ?? null;
     const prev = row?.prev_close ?? null;
@@ -196,7 +175,7 @@ async function fetchMarketSentiment(): Promise<MarketSentiment> {
   const breadthDate = latest.candles_1d ?? today;
 
   const [pcr, breadth, instSummary, vixCandles, vixSnap] = await Promise.all([
-    safeGet<{ pcr_oi: number | null } | null>(`/eod/pcr/NIFTY/${pcrDate}`, null),
+    safeGet<{ pcr_oi: number | null } | null>(`/eod/pcr/SPY/${pcrDate}`, null),
     safeGet<{ advances: number; declines: number; unchanged: number } | null>(
       `/eod/breadth/${breadthDate}`,
       null,
@@ -206,14 +185,14 @@ async function fetchMarketSentiment(): Promise<MarketSentiment> {
       null,
     ),
     safeGet<Array<{ ts: string; open: number; high: number; low: number; close: number }>>(
-      `/eod/candles/NSE_INDIAVIX_IDX?days=30`,
+      `/eod/candles/VIXY?days=30`,
       [],
     ),
     // `/market/snapshot` does the full LTP → 1d → 1m fallback server-side,
     // so VIX renders even when NSE didn't ship it in today's ind_close_all
     // and only a brief intraday WS connection left 1m bars behind.
     safeGet<Record<string, { ltp: number | null; prev_close: number | null }>>(
-      `/market/snapshot?symbols=NSE_INDIAVIX_IDX`,
+      `/market/snapshot?symbols=VIXY`,
       {},
     ),
   ]);
@@ -221,7 +200,7 @@ async function fetchMarketSentiment(): Promise<MarketSentiment> {
   // VIX — pull the latest price from snapshot (with full fallback chain),
   // and the prior close from EOD candles when available. If both are
   // missing the block is null and the widget shows "—".
-  const vixRow = vixSnap["NSE_INDIAVIX_IDX"];
+  const vixRow = vixSnap["VIXY"];
   const liveVix = vixRow?.ltp ?? null;
   const snapPrevClose = vixRow?.prev_close ?? null;
   // Prefer snapshot's prev_close (set when an EOD row was used); fall back
@@ -361,7 +340,7 @@ async function fetchBreadthBySector(): Promise<Array<{
   return await safeGet(`/eod/breadth/by-sector`, [] as any);
 }
 
-/** Latest intraday PCR snapshot for `underlying` (default NIFTY).
+/** Latest intraday PCR snapshot for `underlying` (default SPY).
  *
  *  Backed by /eod/intraday-oi-aggregate which materialises one row per
  *  IntradayOiSnapshot timestamp. The endpoint returns the day's series,
@@ -370,7 +349,7 @@ async function fetchBreadthBySector(): Promise<Array<{
  *  during market hours). NSE doesn't publish "live PCR" as a tick, so
  *  this poll-the-latest-snapshot path is the freshest source available
  *  without a custom matching engine. */
-async function fetchPcrLive(underlying: string = "NIFTY"): Promise<number | null> {
+async function fetchPcrLive(underlying: string = "SPY"): Promise<number | null> {
   const series = await safeGet<Array<{ ts: string; pcr_oi: number | null }>>(
     `/eod/intraday-oi-aggregate/${underlying}`,
     [],
@@ -387,7 +366,7 @@ const marketDataService = {
   getBreadthLive: fetchBreadthLive,
   getBreadthBySector: fetchBreadthBySector,
   getPcrLive: fetchPcrLive,
-  registry: INDIAN_INDEX_REGISTRY,
+  registry: US_INDEX_REGISTRY,
 };
 
 export default marketDataService;

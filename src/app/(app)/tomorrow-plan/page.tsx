@@ -183,10 +183,10 @@ const STANCE_TONE: Record<"BUY_PREMIUM" | "SELL_PREMIUM", string> = {
 };
 
 const fmtNum = (n: number | null | undefined, frac = 2) =>
-  n == null ? "—" : n.toLocaleString("en-IN", { minimumFractionDigits: frac, maximumFractionDigits: frac });
+  n == null ? "—" : n.toLocaleString("en-US", { minimumFractionDigits: frac, maximumFractionDigits: frac });
 
-const fmtINR_Cr = (n: number | null | undefined) =>
-  n == null ? "—" : `${n >= 0 ? "+" : ""}₹${Math.round(n).toLocaleString("en-IN")} Cr`;
+const fmtUSD_Cr = (n: number | null | undefined) =>
+  n == null ? "—" : `${n >= 0 ? "+" : ""}$${Math.round(n).toLocaleString("en-US")} Cr`;
 
 const fetcher = (u: string) => api.get(u).then((r) => r.data);
 
@@ -665,7 +665,7 @@ function IntradayDetailDialog({ row, onClose }: { row: IntradayRow | null; onClo
               value={
                 row.extras.volume_vs_20d_avg != null
                   ? `${row.extras.volume_vs_20d_avg.toFixed(2)}× avg`
-                  : row.extras.volume.toLocaleString("en-IN")
+                  : row.extras.volume.toLocaleString("en-US")
               }
             />
             <DetailLine
@@ -971,7 +971,7 @@ function FnoDetailDialog({ row, onClose }: { row: FnoOpportunity | null; onClose
               value={`${row.extras.price_change_pct >= 0 ? "+" : ""}${row.extras.price_change_pct.toFixed(2)}%`}
               tone={row.extras.price_change_pct >= 0 ? "text-profit" : "text-loss"}
             />
-            <DetailLine label="ΣΔOI (futures)"   value={row.extras.chg_in_oi_total.toLocaleString("en-IN")} />
+            <DetailLine label="ΣΔOI (futures)"   value={row.extras.chg_in_oi_total.toLocaleString("en-US")} />
             <DetailLine label={`ATR(${row.extras.atr_period})`} value={fmtNum(row.extras.atr, 2)} />
             <DetailLine label="Delivery %"       value={row.extras.delivery_pct == null ? "—" : `${row.extras.delivery_pct.toFixed(1)}%`} />
             <DetailLine label="IV regime"        value={row.extras.iv_regime ?? "—"} />
@@ -1035,11 +1035,11 @@ function OptionLegCard({ leg, recommended }: { leg: OptionLeg | null; recommende
       <p className="font-mono text-sm font-bold mb-2">{leg.instrument}</p>
       <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] font-mono mb-2">
         <span className="text-muted-foreground">Premium</span>
-        <span className="text-right tabular-nums">₹{leg.premium.toFixed(2)}</span>
+        <span className="text-right tabular-nums">${leg.premium.toFixed(2)}</span>
         <span className="text-muted-foreground">Max risk</span>
-        <span className="text-right tabular-nums text-loss">₹{leg.max_risk.toFixed(2)}</span>
+        <span className="text-right tabular-nums text-loss">${leg.max_risk.toFixed(2)}</span>
         <span className="text-muted-foreground">Payout @ T1</span>
-        <span className="text-right tabular-nums text-profit">₹{leg.expected_payout_at_t1.toFixed(2)}</span>
+        <span className="text-right tabular-nums text-profit">${leg.expected_payout_at_t1.toFixed(2)}</span>
         <span className="text-muted-foreground">R:R</span>
         <span className="text-right tabular-nums font-bold">{leg.r_to_r.toFixed(2)}</span>
       </div>
@@ -1251,7 +1251,7 @@ function IndexPlanCard({ plan }: { plan: IndexPlan }) {
         />
         <ContextChip
           label="FII"
-          value={plan.fii_dii?.fii_net != null ? fmtINR_Cr(plan.fii_dii.fii_net) : "—"}
+          value={plan.fii_dii?.fii_net != null ? fmtUSD_Cr(plan.fii_dii.fii_net) : "—"}
           tone={
             plan.fii_dii?.fii_net != null && plan.fii_dii.fii_net >= 0
               ? "bg-profit/10 text-profit border-profit/30"

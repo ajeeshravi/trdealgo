@@ -2,7 +2,7 @@
 import useSWR from "swr";
 import { Briefcase, ListOrdered, Percent, TrendingUp } from "lucide-react";
 import { api } from "@/lib/api";
-import { fmtINR, prettySymbol } from "@/lib/fmt";
+import { fmtUSD, prettySymbol } from "@/lib/fmt";
 import { MetricCard } from "@/components/MetricCard";
 import { StatePill } from "@/components/StatePill";
 import { cn } from "@/lib/utils";
@@ -28,7 +28,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <MetricCard
           label="P&L (30d)"
-          value={fmtINR(totalPnl)}
+          value={fmtUSD(totalPnl)}
           trend={totalPnl >= 0 ? "up" : "down"}
           icon={<TrendingUp className="w-4 h-4" />}
         />
@@ -64,10 +64,10 @@ export default function Dashboard() {
                   {p.trading_symbol || prettySymbol(p.internal_symbol)}
                 </td>
                 <td className="font-mono">{p.qty}</td>
-                <td className="font-mono">{fmtINR(p.avg_price)}</td>
-                <td className="font-mono">{fmtINR(p.last_price)}</td>
+                <td className="font-mono">{fmtUSD(p.avg_price)}</td>
+                <td className="font-mono">{fmtUSD(p.last_price)}</td>
                 <td className={cn("font-mono", p.unrealized_pnl >= 0 ? "text-profit" : "text-loss")}>
-                  {fmtINR(p.unrealized_pnl)}
+                  {fmtUSD(p.unrealized_pnl)}
                 </td>
               </tr>
             ))}
@@ -96,7 +96,7 @@ export default function Dashboard() {
                 <td className="font-mono">{o.qty}</td>
                 <td>{o.order_type}</td>
                 <td><StatePill state={o.state} /></td>
-                <td className="font-mono">{fmtINR(o.avg_price)}</td>
+                <td className="font-mono">{fmtUSD(o.avg_price)}</td>
               </tr>
             ))}
           </tbody>

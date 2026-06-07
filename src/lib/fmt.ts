@@ -1,7 +1,7 @@
-export const fmtINR = (n: number | null | undefined, frac = 2) =>
+export const fmtUSD = (n: number | null | undefined, frac = 2) =>
   n === null || n === undefined
     ? "—"
-    : n.toLocaleString("en-IN", { minimumFractionDigits: frac, maximumFractionDigits: frac });
+    : n.toLocaleString("en-US", { minimumFractionDigits: frac, maximumFractionDigits: frac });
 
 export const fmtPct = (n: number | null | undefined) =>
   n === null || n === undefined ? "—" : `${(n * 100).toFixed(2)}%`;
@@ -63,19 +63,19 @@ export function fmtExpiry(s: string | Date | null | undefined): string {
   return `${dd}-${MONTH_ABBR[d.getMonth()]}-${d.getFullYear()}`;
 }
 
-/** Canonical index ticker → display name. Anything not listed falls
- * back to the ticker itself. Kept in sync with
- * `backend/app/services/symbols/aliases.py::INDEX_ALIASES[NSE]`. */
+/** Canonical index ticker / ETF proxy → display name. Anything not listed
+ * falls back to the ticker itself. Kept in sync with the US index roster in
+ * `src/services/marketDataService.ts::US_INDEX_REGISTRY`. */
 const INDEX_DISPLAY: Record<string, string> = {
-  NIFTY50:     "NIFTY 50",
-  NIFTYBANK:   "BANK NIFTY",
-  FINNIFTY:    "FIN NIFTY",
-  MIDCPNIFTY:  "MIDCAP NIFTY",
-  NIFTYNXT50:  "NIFTY NEXT 50",
-  INDIAVIX:    "INDIA VIX",
-  SENSEX:      "SENSEX",
-  BANKEX:      "BANKEX",
-  SENSEX50:    "SENSEX 50",
+  SPY:  "S&P 500",
+  DIA:  "DOW JONES",
+  QQQ:  "NASDAQ 100",
+  IWM:  "RUSSELL 2000",
+  VIXY: "VOLATILITY (VIX)",
+  VTI:  "TOTAL MARKET",
+  MDY:  "S&P MIDCAP 400",
+  IJR:  "S&P SMALLCAP 600",
+  ONEQ: "NASDAQ COMPOSITE",
 };
 
 /** `'290526'` → `'29 May 26'`. Returns the raw string on bad input. */

@@ -86,7 +86,7 @@ export function EquityStrategyBuilder({
           </select>
         </div>
         <div>
-          <div className="label">Total capital (₹)</div>
+          <div className="label">Total capital ($)</div>
           <input
             className="input"
             type="number"
@@ -416,7 +416,7 @@ export function EquityStrategyBuilder({
           />
         </div>
         <div>
-          <div className="label">Max daily loss (₹)</div>
+          <div className="label">Max daily loss ($)</div>
           <input
             className="input"
             type="number"
@@ -427,7 +427,7 @@ export function EquityStrategyBuilder({
           />
         </div>
         <div>
-          <div className="label">Max daily profit (₹)</div>
+          <div className="label">Max daily profit ($)</div>
           <input
             className="input"
             type="number"

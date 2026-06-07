@@ -8,7 +8,7 @@ import { ExternalLink, BarChart3 } from "lucide-react";
 
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { fmtINR, prettySymbol } from "@/lib/fmt";
+import { fmtUSD, prettySymbol } from "@/lib/fmt";
 import { useLivePrices } from "@/lib/useLivePrices";
 import { useMarketPollInterval } from "@/lib/marketHours";
 import marketDataService from "@/services/marketDataService";
@@ -203,7 +203,7 @@ export default function Dashboard() {
     () =>
       filledOrders.map((o: any) => ({
         id: o.id,
-        time: o.created_at ? new Date(o.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "",
+        time: o.created_at ? new Date(o.created_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "",
         symbol: o.trading_symbol ?? prettySymbol(o.internal_symbol),
         side: o.side as "BUY" | "SELL",
         quantity: o.qty ?? 0,
@@ -276,7 +276,7 @@ export default function Dashboard() {
         if (cancelled) return;
         const formatted = announcements.map((a: any, idx: number) => {
           const timeStr = a.timestamp
-            ? new Date(a.timestamp).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })
+            ? new Date(a.timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
             : "";
           return {
             id: idx + 1,
@@ -540,7 +540,7 @@ export default function Dashboard() {
           >
             <p className="text-xs text-muted-foreground mb-1">Today&apos;s P&amp;L</p>
             <p className={cn("font-mono text-2xl font-bold", todayPnl >= 0 ? "text-profit" : "text-loss")}>
-              {todayPnl >= 0 ? "+" : ""}₹{Math.round(todayPnl).toLocaleString("en-IN")}
+              {todayPnl >= 0 ? "+" : ""}${Math.round(todayPnl).toLocaleString("en-US")}
             </p>
             <p className="text-xs text-muted-foreground font-mono mt-1">
               {openPositions.length} positions
@@ -578,7 +578,7 @@ export default function Dashboard() {
             className="text-left rounded-lg border border-border/50 bg-card p-4 hover:border-primary/40 transition-colors"
           >
             <p className="text-xs text-muted-foreground mb-1">Capital Deployed</p>
-            <p className="font-mono text-2xl font-bold">₹{capitalDeployed.toLocaleString("en-IN")}</p>
+            <p className="font-mono text-2xl font-bold">${capitalDeployed.toLocaleString("en-US")}</p>
             <p className="text-xs text-muted-foreground font-mono mt-1">Margin Used: {marginUsed}%</p>
           </button>
         </div>
@@ -810,7 +810,7 @@ export default function Dashboard() {
                       {t.side}
                     </td>
                     <td className="py-3.5 px-4 text-right">{t.quantity}</td>
-                    <td className="py-3.5 px-4 text-right">₹{fmtINR(t.price)}</td>
+                    <td className="py-3.5 px-4 text-right">${fmtUSD(t.price)}</td>
                     <td className="py-3.5 px-4 text-muted-foreground">{t.strategy}</td>
                   </tr>
                 ))}
@@ -848,7 +848,7 @@ export default function Dashboard() {
             <div className="rounded-lg border border-border/50 bg-card p-3">
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Unrealised</p>
               <p className={cn("font-mono text-lg font-bold mt-1", openMtm >= 0 ? "text-profit" : "text-loss")}>
-                {openMtm >= 0 ? "+" : ""}₹{Math.round(openMtm).toLocaleString("en-IN")}
+                {openMtm >= 0 ? "+" : ""}${Math.round(openMtm).toLocaleString("en-US")}
               </p>
               <p className="text-[10px] font-mono text-muted-foreground mt-0.5">
                 {openPositions.length} open
@@ -857,7 +857,7 @@ export default function Dashboard() {
             <div className="rounded-lg border border-border/50 bg-card p-3">
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Realised</p>
               <p className={cn("font-mono text-lg font-bold mt-1", todayRealized >= 0 ? "text-profit" : "text-loss")}>
-                {todayRealized >= 0 ? "+" : ""}₹{Math.round(todayRealized).toLocaleString("en-IN")}
+                {todayRealized >= 0 ? "+" : ""}${Math.round(todayRealized).toLocaleString("en-US")}
               </p>
               <p className="text-[10px] font-mono text-muted-foreground mt-0.5">
                 {closedTodayPositions.length} closed
@@ -866,7 +866,7 @@ export default function Dashboard() {
             <div className="rounded-lg border border-border/50 bg-card p-3">
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Net</p>
               <p className={cn("font-mono text-lg font-bold mt-1", todayPnl >= 0 ? "text-profit" : "text-loss")}>
-                {todayPnl >= 0 ? "+" : ""}₹{Math.round(todayPnl).toLocaleString("en-IN")}
+                {todayPnl >= 0 ? "+" : ""}${Math.round(todayPnl).toLocaleString("en-US")}
               </p>
               <p className="text-[10px] font-mono text-muted-foreground mt-0.5">
                 {recentTrades.length} fills
@@ -907,10 +907,10 @@ export default function Dashboard() {
                           {p.side}
                         </td>
                         <td className="py-3.5 px-4 text-right">{p.quantity}</td>
-                        <td className="py-3.5 px-4 text-right">₹{fmtINR(p.avgPrice)}</td>
-                        <td className="py-3.5 px-4 text-right">₹{fmtINR(p.ltp)}</td>
+                        <td className="py-3.5 px-4 text-right">${fmtUSD(p.avgPrice)}</td>
+                        <td className="py-3.5 px-4 text-right">${fmtUSD(p.ltp)}</td>
                         <td className={cn("py-3.5 px-4 text-right font-semibold", p.pnl >= 0 ? "text-profit" : "text-loss")}>
-                          {p.pnl >= 0 ? "+" : ""}₹{Math.round(p.pnl).toLocaleString("en-IN")}
+                          {p.pnl >= 0 ? "+" : ""}${Math.round(p.pnl).toLocaleString("en-US")}
                         </td>
                         <td className={cn("py-3.5 px-4 text-right", p.pnl >= 0 ? "text-profit" : "text-loss")}>
                           {p.pnl >= 0 ? "+" : ""}
@@ -947,9 +947,9 @@ export default function Dashboard() {
                       <tr key={p.id} className="border-b border-border/20 hover:bg-muted/30 transition-colors">
                         <td className="py-3.5 px-4 font-semibold">{p.symbol}</td>
                         <td className="py-3.5 px-4 text-muted-foreground">{p.type}</td>
-                        <td className="py-3.5 px-4 text-right">₹{fmtINR(p.avgPrice)}</td>
+                        <td className="py-3.5 px-4 text-right">${fmtUSD(p.avgPrice)}</td>
                         <td className={cn("py-3.5 px-4 text-right font-semibold", p.realizedPnl >= 0 ? "text-profit" : "text-loss")}>
-                          {p.realizedPnl >= 0 ? "+" : ""}₹{Math.round(p.realizedPnl).toLocaleString("en-IN")}
+                          {p.realizedPnl >= 0 ? "+" : ""}${Math.round(p.realizedPnl).toLocaleString("en-US")}
                         </td>
                       </tr>
                     ))}
@@ -1005,7 +1005,7 @@ export default function Dashboard() {
                     <td className="py-3.5 px-4 font-semibold">{s.name}</td>
                     <td className="py-3.5 px-4 text-muted-foreground">{s.type}</td>
                     <td className={cn("py-3.5 px-4 text-right font-semibold", s.pnl >= 0 ? "text-profit" : "text-loss")}>
-                      {s.pnl >= 0 ? "+" : ""}₹{Math.round(s.pnl).toLocaleString("en-IN")}
+                      {s.pnl >= 0 ? "+" : ""}${Math.round(s.pnl).toLocaleString("en-US")}
                     </td>
                     <td className={cn("py-3.5 px-4 text-right", s.pnl >= 0 ? "text-profit" : "text-loss")}>
                       {s.pnlPercent >= 0 ? "+" : ""}
@@ -1013,7 +1013,7 @@ export default function Dashboard() {
                     </td>
                     <td className="py-3.5 px-4 text-right">{s.winRate}%</td>
                     <td className="py-3.5 px-4 text-right">{s.trades}</td>
-                    <td className="py-3.5 px-4 text-right">₹{s.allocation.toLocaleString("en-IN")}</td>
+                    <td className="py-3.5 px-4 text-right">${s.allocation.toLocaleString("en-US")}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1042,16 +1042,16 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="rounded-lg border border-border/30 bg-muted/30 p-5">
                 <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Total Capital</p>
-                <p className="font-mono text-2xl font-bold">₹{TOTAL_CAPITAL.toLocaleString("en-IN")}</p>
+                <p className="font-mono text-2xl font-bold">${TOTAL_CAPITAL.toLocaleString("en-US")}</p>
               </div>
               <div className="rounded-lg border border-border/30 bg-muted/30 p-5">
                 <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Deployed</p>
-                <p className="font-mono text-2xl font-bold">₹{capitalDeployed.toLocaleString("en-IN")}</p>
+                <p className="font-mono text-2xl font-bold">${capitalDeployed.toLocaleString("en-US")}</p>
               </div>
               <div className="rounded-lg border border-border/30 bg-muted/30 p-5">
                 <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Available</p>
                 <p className="font-mono text-2xl font-bold">
-                  ₹{(TOTAL_CAPITAL - capitalDeployed).toLocaleString("en-IN")}
+                  ${(TOTAL_CAPITAL - capitalDeployed).toLocaleString("en-US")}
                 </p>
               </div>
             </div>
@@ -1121,7 +1121,7 @@ export default function Dashboard() {
                           {s.status}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 text-right">₹{s.allocation.toLocaleString("en-IN")}</td>
+                      <td className="py-3.5 px-4 text-right">${s.allocation.toLocaleString("en-US")}</td>
                       <td className="py-3.5 px-4 text-right">
                         {((s.allocation / TOTAL_CAPITAL) * 100).toFixed(1)}%
                       </td>
@@ -1133,7 +1133,7 @@ export default function Dashboard() {
                     <td colSpan={3} className="py-3.5 px-4">
                       Total
                     </td>
-                    <td className="py-3.5 px-4 text-right">₹{capitalDeployed.toLocaleString("en-IN")}</td>
+                    <td className="py-3.5 px-4 text-right">${capitalDeployed.toLocaleString("en-US")}</td>
                     <td className="py-3.5 px-4 text-right">{((capitalDeployed / TOTAL_CAPITAL) * 100).toFixed(1)}%</td>
                   </tr>
                 </tfoot>
@@ -1493,8 +1493,8 @@ function SentimentFiiDiiDialog({
         <div className="flex-1 overflow-auto mt-4 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: "FII Cash", value: fii ? `${fii.net_value >= 0 ? "+" : ""}₹${Math.round(fii.net_value)} Cr` : "—", trend: fii && fii.net_value >= 0 ? "profit" : "loss" },
-              { label: "DII Cash", value: dii ? `${dii.net_value >= 0 ? "+" : ""}₹${Math.round(dii.net_value)} Cr` : "—", trend: dii && dii.net_value >= 0 ? "profit" : "loss" },
+              { label: "FII Cash", value: fii ? `${fii.net_value >= 0 ? "+" : ""}$${Math.round(fii.net_value)} Cr` : "—", trend: fii && fii.net_value >= 0 ? "profit" : "loss" },
+              { label: "DII Cash", value: dii ? `${dii.net_value >= 0 ? "+" : ""}$${Math.round(dii.net_value)} Cr` : "—", trend: dii && dii.net_value >= 0 ? "profit" : "loss" },
               { label: "FII F&O", value: "—", trend: "neutral" },
               { label: "FII Index Fut", value: "—", trend: "neutral" },
             ].map((item, i) => (
@@ -1515,7 +1515,7 @@ function SentimentFiiDiiDialog({
           {/* 30-day FII / DII / Net line chart */}
           <div className="rounded-lg border border-border/30 bg-muted/30 p-4">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-semibold">FII vs DII vs Net — Last 30 Sessions (₹ Cr)</h4>
+              <h4 className="text-sm font-semibold">FII vs DII vs Net — Last 30 Sessions ($ Cr)</h4>
               <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
                 source: nse cash market
               </span>
@@ -1539,7 +1539,7 @@ function SentimentFiiDiiDialog({
           </div>
 
           <div className="rounded-lg border border-border/30 bg-muted/30 p-4">
-            <h4 className="text-sm font-semibold mb-2">Last 30 Days FII/DII Flow (₹ Cr)</h4>
+            <h4 className="text-sm font-semibold mb-2">Last 30 Days FII/DII Flow ($ Cr)</h4>
             <table className="w-full text-xs font-mono">
               <thead>
                 <tr className="border-b border-border/50 text-muted-foreground uppercase tracking-wider text-[10px]">
@@ -1567,17 +1567,17 @@ function SentimentFiiDiiDialog({
                     return (
                       <tr key={d} className="border-b border-border/20">
                         <td className="py-2 px-3">{d}</td>
-                        <td className="py-2 px-3 text-right">{Math.round(f?.buy_value ?? 0).toLocaleString("en-IN")}</td>
-                        <td className="py-2 px-3 text-right">{Math.round(f?.sell_value ?? 0).toLocaleString("en-IN")}</td>
+                        <td className="py-2 px-3 text-right">{Math.round(f?.buy_value ?? 0).toLocaleString("en-US")}</td>
+                        <td className="py-2 px-3 text-right">{Math.round(f?.sell_value ?? 0).toLocaleString("en-US")}</td>
                         <td className={cn("py-2 px-3 text-right font-semibold", (f?.net_value ?? 0) >= 0 ? "text-profit" : "text-loss")}>
                           {(f?.net_value ?? 0) >= 0 ? "+" : ""}
-                          {Math.round(f?.net_value ?? 0).toLocaleString("en-IN")}
+                          {Math.round(f?.net_value ?? 0).toLocaleString("en-US")}
                         </td>
-                        <td className="py-2 px-3 text-right">{Math.round(di?.buy_value ?? 0).toLocaleString("en-IN")}</td>
-                        <td className="py-2 px-3 text-right">{Math.round(di?.sell_value ?? 0).toLocaleString("en-IN")}</td>
+                        <td className="py-2 px-3 text-right">{Math.round(di?.buy_value ?? 0).toLocaleString("en-US")}</td>
+                        <td className="py-2 px-3 text-right">{Math.round(di?.sell_value ?? 0).toLocaleString("en-US")}</td>
                         <td className={cn("py-2 px-3 text-right font-semibold", (di?.net_value ?? 0) >= 0 ? "text-profit" : "text-loss")}>
                           {(di?.net_value ?? 0) >= 0 ? "+" : ""}
-                          {Math.round(di?.net_value ?? 0).toLocaleString("en-IN")}
+                          {Math.round(di?.net_value ?? 0).toLocaleString("en-US")}
                         </td>
                       </tr>
                     );

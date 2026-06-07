@@ -13,7 +13,7 @@ import useSWR from "swr";
 import toast from "react-hot-toast";
 import clsx from "clsx";
 import { api } from "@/lib/api";
-import { fmtINR, fmtTs, prettySymbol } from "@/lib/fmt";
+import { fmtUSD, fmtTs, prettySymbol } from "@/lib/fmt";
 import { useLivePrices } from "@/lib/useLivePrices";
 import { useMarketPollInterval } from "@/lib/marketHours";
 
@@ -249,7 +249,7 @@ export default function StrategyDetailsPage({ params }: { params: { id: string }
           </div>
           <h1 className="text-2xl font-semibold mt-1">{detail.name}</h1>
           <p className="text-sm text-muted-foreground">
-            {detail.kind} · {detail.timeframe_min ? `${detail.timeframe_min}m` : "tick"} · capital {fmtINR(detail.capital)}
+            {detail.kind} · {detail.timeframe_min ? `${detail.timeframe_min}m` : "tick"} · capital {fmtUSD(detail.capital)}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -299,7 +299,7 @@ export default function StrategyDetailsPage({ params }: { params: { id: string }
         )}
         <SummaryCard
           label="Cumulative P&L"
-          value={`₹ ${fmtINR(totalPnl)}`}
+          value={`$ ${fmtUSD(totalPnl)}`}
           accent={totalPnl >= 0 ? "primary" : "danger"}
         />
       </section>
@@ -531,7 +531,7 @@ function LivePriceCell({
       )}
       title={`tick received ${Math.max(0, Math.floor((Date.now() - cur.ts) / 1000))}s ago`}
     >
-      ₹{cur.ltp.toFixed(2)}
+      ${cur.ltp.toFixed(2)}
     </span>
   );
 }
@@ -551,7 +551,7 @@ function Meta({ label, value }: { label: string; value: string | null | undefine
 function fmtIndicator(v: number | null | undefined): string {
   if (v === null || v === undefined || Number.isNaN(v)) return "—";
   const abs = Math.abs(v);
-  if (abs >= 1000) return v.toLocaleString("en-IN", { maximumFractionDigits: 0 });
+  if (abs >= 1000) return v.toLocaleString("en-US", { maximumFractionDigits: 0 });
   if (abs >= 1)    return v.toFixed(2);
   return v.toFixed(4);
 }
@@ -941,11 +941,11 @@ function PendingTriggersSection({ runIds }: { runIds: string[] }) {
                     <span className="text-muted-foreground">·</span> {t.qty}
                   </td>
                   <td className="px-3 py-2 text-right font-mono">
-                    ₹{Number(t.trigger_price).toFixed(2)}
+                    ${Number(t.trigger_price).toFixed(2)}
                   </td>
                   <td className="px-3 py-2 text-right font-mono">
                     {t.limit_price != null
-                      ? `₹${Number(t.limit_price).toFixed(2)}`
+                      ? `$${Number(t.limit_price).toFixed(2)}`
                       : "MKT"}
                   </td>
                   <td className="px-3 py-2 text-right">

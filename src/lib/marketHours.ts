@@ -7,17 +7,19 @@
  * CPU + battery + backend cycles for nothing. These helpers return a
  * "live" interval during market hours and 0 (= no polling) outside.
  *
- * IST sessions (Mon–Fri only — exchange holidays are not modelled here
- * since they vary per year; that's a separate concern handled by the
- * backend's holiday calendar):
- *   - EQ_FO  (NSE / BSE / NFO / BFO Equity, Futures, Options)  09:15 – 15:30
- *   - MCX    (Commodities, non-agri standard hours)            09:00 – 23:30
- *   - CDS    (Currency Derivatives)                            09:00 – 17:00
- *   - ANY    (union — open if any of the above is open)        09:00 – 23:30
+ * US sessions in America/New_York (Mon–Fri only — exchange holidays are
+ * not modelled here since they vary per year; that's a separate concern
+ * handled by the backend's holiday calendar). DST is handled correctly
+ * because the wall-clock is read via `Intl` for the New York zone:
+ *   - EQ_FO  (regular equities / options session)             09:30 – 16:00
+ *   - MCX    (extended: pre-market open → regular close)      04:00 – 16:00
+ *   - CDS    (regular + after-hours)                          09:30 – 20:00
+ *   - ANY    (union — pre-market through after-hours)         04:00 – 20:00
  *
- * Use `ANY` for endpoints that mix data across exchanges (the user's
- * positions, orders, strategies, dashboard tiles). Use `EQ_FO` when
- * you're sure the data is NSE/BSE/F&O only (option chain, NSE indices).
+ * The group keys are kept from the original (India) implementation so
+ * existing call sites don't change; only the underlying hours moved to
+ * US markets. Use `ANY` for endpoints that mix data (positions, orders,
+ * strategies, dashboard tiles); use `EQ_FO` for the regular cash session.
  *
  * Open-transition handling: a singleton watcher inside this module
  * detects the closed→open transition and fires a global SWR `mutate()`
@@ -32,35 +34,46 @@ import { mutate as globalSWRMutate } from "swr";
 export type ExchangeGroup = "EQ_FO" | "MCX" | "CDS" | "ANY";
 
 interface Session {
-  /** Start of the trading session, IST minutes since midnight. */
+  /** Start of the trading session, ET minutes since midnight. */
   startMin: number;
-  /** End of the trading session, IST minutes since midnight. */
+  /** End of the trading session, ET minutes since midnight. */
   endMin: number;
 }
 
 const SESSIONS: Record<ExchangeGroup, Session> = {
-  EQ_FO: { startMin: 9 * 60 + 15, endMin: 15 * 60 + 30 },
-  MCX: { startMin: 9 * 60, endMin: 23 * 60 + 30 },
-  CDS: { startMin: 9 * 60, endMin: 17 * 60 },
-  ANY: { startMin: 9 * 60, endMin: 23 * 60 + 30 },
+  EQ_FO: { startMin: 9 * 60 + 30, endMin: 16 * 60 },
+  MCX: { startMin: 4 * 60, endMin: 16 * 60 },
+  CDS: { startMin: 9 * 60 + 30, endMin: 20 * 60 },
+  ANY: { startMin: 4 * 60, endMin: 20 * 60 },
 };
 
-const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000;
+const WEEKDAY_INDEX: Record<string, number> = {
+  Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+};
 
-/** Returns the current IST wall-clock as `{ weekday, minutesOfDay }`.
- *  Weekday: 0 = Sun … 6 = Sat. */
-function istNow(at?: Date): { weekday: number; minutesOfDay: number } {
-  const ms = (at ?? new Date()).getTime() + IST_OFFSET_MS;
-  const d = new Date(ms);
+/** Returns the current US/Eastern wall-clock as `{ weekday, minutesOfDay }`.
+ *  Weekday: 0 = Sun … 6 = Sat. Uses `Intl` so DST (EST/EDT) is correct. */
+function etNow(at?: Date): { weekday: number; minutesOfDay: number } {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(at ?? new Date());
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  let hour = parseInt(get("hour"), 10);
+  if (hour === 24) hour = 0; // some engines emit "24" at midnight
+  const minute = parseInt(get("minute"), 10);
   return {
-    weekday: d.getUTCDay(),
-    minutesOfDay: d.getUTCHours() * 60 + d.getUTCMinutes(),
+    weekday: WEEKDAY_INDEX[get("weekday")] ?? 0,
+    minutesOfDay: hour * 60 + minute,
   };
 }
 
-/** True when the given exchange-group session is open *right now* (IST). */
+/** True when the given exchange-group session is open *right now* (ET). */
 export function isMarketOpen(group: ExchangeGroup = "EQ_FO", at?: Date): boolean {
-  const { weekday, minutesOfDay } = istNow(at);
+  const { weekday, minutesOfDay } = etNow(at);
   if (weekday === 0 || weekday === 6) return false; // Sun / Sat
   const s = SESSIONS[group];
   return minutesOfDay >= s.startMin && minutesOfDay <= s.endMin;

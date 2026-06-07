@@ -74,11 +74,11 @@ export default function EquityCurveChart(props: Props) {
             tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}K`}
+            tickFormatter={(v) => `$${(v / 1000).toFixed(0)}K`}
           />
           <Tooltip
             contentStyle={TOOLTIP_STYLE}
-            formatter={(value: number) => [`₹${value.toLocaleString("en-IN")}`, ""]}
+            formatter={(value: number) => [`$${value.toLocaleString("en-US")}`, ""]}
           />
           <Line
             type="monotone"
@@ -149,7 +149,7 @@ export default function EquityCurveChart(props: Props) {
         />
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
-          formatter={(v: number, name: string) => [`₹${v.toLocaleString("en-IN")} Cr`, name]}
+          formatter={(v: number, name: string) => [`$${v.toLocaleString("en-US")} Cr`, name]}
         />
         <Line type="monotone" dataKey="fii" stroke="hsl(var(--loss))" strokeWidth={2} dot={false} name="FII Net" />
         <Line type="monotone" dataKey="dii" stroke="hsl(var(--profit))" strokeWidth={2} dot={false} name="DII Net" />

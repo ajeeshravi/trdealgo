@@ -160,7 +160,7 @@ const fetcher = (u: string) => api.get(u).then((r) => r.data);
 const fmtExpiry = (iso: string): string => {
   const d = new Date(iso + "T00:00:00Z");
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  return d.toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" });
 };
 
 const fmtK = (n: number): string => {
@@ -994,11 +994,11 @@ export default function OptionChainPage() {
       {!expiriesError && chain && (
         <div className="flex items-center gap-4 mb-2 text-xs font-mono text-muted-foreground">
           <span>Spot <span className={cn("font-bold", spot != null ? "text-foreground" : "text-muted-foreground")}>
-            {spot != null ? spot.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—"}
+            {spot != null ? spot.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—"}
           </span></span>
           <span>PCR <span className="font-bold text-foreground">{pcr}</span></span>
           <span>MaxPain <span className="font-bold text-foreground">
-            {maxPainStrike != null ? maxPainStrike.toLocaleString("en-IN") : "—"}
+            {maxPainStrike != null ? maxPainStrike.toLocaleString("en-US") : "—"}
           </span></span>
           <span className="ml-auto text-muted-foreground">
             {windowedRows.length} of {chain.rows.length} strikes
@@ -1142,7 +1142,7 @@ export default function OptionChainPage() {
                           row.isATM && "text-primary",
                           isMaxPain && "underline decoration-warning",
                         )} style={{ width: STRIKE_COLUMN_WIDTH }}>
-                          {row.strike.toLocaleString("en-IN")}
+                          {row.strike.toLocaleString("en-US")}
                           {row.isATM && <span className="ml-1 text-[8px] text-primary">ATM</span>}
                           {isMaxPain && !row.isATM && <span className="ml-1 text-[8px] text-warning">MP</span>}
                         </td>

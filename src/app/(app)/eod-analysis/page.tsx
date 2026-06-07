@@ -363,7 +363,7 @@ function IndicesHero({ date }: { date: string }) {
           <MetricCard
             key={r.internal_symbol}
             label={prettySymbol(r.internal_symbol)}
-            value={r.close.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+            value={r.close.toLocaleString("en-US", { maximumFractionDigits: 2 })}
             subValue={
               r.change_pct === null
                 ? "no prior close"
@@ -456,7 +456,7 @@ function TopDeliveryCard({
                 >
                   <td className="font-mono">{prettySymbol(r.internal_symbol)}</td>
                   <td className="font-mono text-right">
-                    {r.deliv_qty.toLocaleString("en-IN")}
+                    {r.deliv_qty.toLocaleString("en-US")}
                   </td>
                   <td className="font-mono text-right text-profit">
                     {r.deliv_pct.toFixed(2)}%
@@ -583,13 +583,13 @@ function OiBuildupCard({
                       {r.price_change >= 0 ? "+" : ""}{r.price_change.toFixed(2)}
                     </td>
                     <td className="font-mono text-right">
-                      {r.open_interest.toLocaleString("en-IN")}
+                      {r.open_interest.toLocaleString("en-US")}
                     </td>
                     <td className={cn(
                       "font-mono text-right",
                       r.chg_in_oi >= 0 ? "text-profit" : "text-loss",
                     )}>
-                      {r.chg_in_oi >= 0 ? "+" : ""}{r.chg_in_oi.toLocaleString("en-IN")}
+                      {r.chg_in_oi >= 0 ? "+" : ""}{r.chg_in_oi.toLocaleString("en-US")}
                     </td>
                     <td>
                       <span className={cn(
@@ -671,11 +671,11 @@ function PcrCard({ date, underlying }: { date: string; underlying: string }) {
             </div>
             <div className="flex justify-between">
               <span className="text-profit">Calls</span>
-              <span className="font-mono">{data.call_oi.toLocaleString("en-IN")}</span>
+              <span className="font-mono">{data.call_oi.toLocaleString("en-US")}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-loss">Puts</span>
-              <span className="font-mono">{data.put_oi.toLocaleString("en-IN")}</span>
+              <span className="font-mono">{data.put_oi.toLocaleString("en-US")}</span>
             </div>
           </div>
           <div className="rounded border border-white/10 bg-white/5 p-3 text-xs space-y-1">
@@ -684,11 +684,11 @@ function PcrCard({ date, underlying }: { date: string; underlying: string }) {
             </div>
             <div className="flex justify-between">
               <span className="text-profit">Calls</span>
-              <span className="font-mono">{data.call_volume.toLocaleString("en-IN")}</span>
+              <span className="font-mono">{data.call_volume.toLocaleString("en-US")}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-loss">Puts</span>
-              <span className="font-mono">{data.put_volume.toLocaleString("en-IN")}</span>
+              <span className="font-mono">{data.put_volume.toLocaleString("en-US")}</span>
             </div>
           </div>
         </div>
@@ -901,7 +901,7 @@ function OiHistoryChart({ rows, symbol }: { rows: OiHistRow[]; symbol: string })
         <span className="font-mono" title={symbol}>{prettySymbol(symbol)}</span> · last {series.length} days ·{" "}
         latest OI{" "}
         <span className="font-mono">
-          {series[series.length - 1].open_interest.toLocaleString("en-IN")}
+          {series[series.length - 1].open_interest.toLocaleString("en-US")}
         </span>
       </div>
       <div className="h-56">
@@ -914,7 +914,7 @@ function OiHistoryChart({ rows, symbol }: { rows: OiHistRow[]; symbol: string })
               contentStyle={{ background: "#171b22", border: "1px solid #222831" }}
               formatter={(v: number, name: string) =>
                 name === "OI"
-                  ? [v.toLocaleString("en-IN"), "OI"]
+                  ? [v.toLocaleString("en-US"), "OI"]
                   : [v.toFixed(2), "Settle"]
               }
             />
@@ -999,12 +999,12 @@ function EmptyState({
 
 
 
-function fmtINR_short(n: number): string {
-  // 12,345,678 → "₹1.23 Cr"; 8,500,000 → "₹85.0 L"; smaller → "₹85,000"
+function fmtUSD_short(n: number): string {
+  // 12,345,678 → "$1.23 Cr"; 8,500,000 → "$85.0 L"; smaller → "$85,000"
   const abs = Math.abs(n);
-  if (abs >= 1e7) return `₹${(n / 1e7).toFixed(2)} Cr`;
-  if (abs >= 1e5) return `₹${(n / 1e5).toFixed(2)} L`;
-  return `₹${Math.round(n).toLocaleString("en-IN")}`;
+  if (abs >= 1e7) return `$${(n / 1e7).toFixed(2)} Cr`;
+  if (abs >= 1e5) return `$${(n / 1e5).toFixed(2)} L`;
+  return `$${Math.round(n).toLocaleString("en-US")}`;
 }
 
 
@@ -1013,7 +1013,7 @@ function fmtCount_short(n: number): string {
   const abs = Math.abs(n);
   if (abs >= 1e6) return `${(n / 1e6).toFixed(2)}M`;
   if (abs >= 1e3) return `${(n / 1e3).toFixed(1)}K`;
-  return n.toLocaleString("en-IN");
+  return n.toLocaleString("en-US");
 }
 
 
@@ -1040,26 +1040,26 @@ function BreadthCard({ date }: { date: string }) {
           Market breadth
         </h2>
         <span className="text-xs text-muted-foreground">
-          {data.total_symbols.toLocaleString("en-IN")} NSE equities
+          {data.total_symbols.toLocaleString("en-US")} NSE equities
         </span>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <BigStat
           label="Advances"
-          value={data.advances.toLocaleString("en-IN")}
+          value={data.advances.toLocaleString("en-US")}
           sub={`${advPct.toFixed(1)}%`}
           subCls="text-profit"
         />
         <BigStat
           label="Declines"
-          value={data.declines.toLocaleString("en-IN")}
+          value={data.declines.toLocaleString("en-US")}
           sub={`${decPct.toFixed(1)}%`}
           subCls="text-loss"
         />
         <BigStat
           label="Unchanged"
-          value={data.unchanged.toLocaleString("en-IN")}
+          value={data.unchanged.toLocaleString("en-US")}
         />
         <BigStat
           label="A/D ratio"
@@ -1073,7 +1073,7 @@ function BreadthCard({ date }: { date: string }) {
         />
         <BigStat
           label="Total turnover"
-          value={fmtINR_short(data.total_turnover)}
+          value={fmtUSD_short(data.total_turnover)}
         />
       </div>
 
@@ -1111,7 +1111,7 @@ function MoversCard({
             Top {tab}
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            By % change. Symbols with prev_close &lt; ₹5 filtered out.
+            By % change. Symbols with prev_close &lt; $5 filtered out.
           </p>
         </div>
         <div className="flex gap-1">
@@ -1233,7 +1233,7 @@ function MostActiveCard({
                   <td className="font-mono">{prettySymbol(r.internal_symbol)}</td>
                   <td className="font-mono text-right">{r.close.toFixed(2)}</td>
                   <td className="font-mono text-right">{fmtCount_short(r.volume)}</td>
-                  <td className="font-mono text-right">{fmtINR_short(r.turnover)}</td>
+                  <td className="font-mono text-right">{fmtUSD_short(r.turnover)}</td>
                 </tr>
               ))}
             </tbody>
@@ -1451,7 +1451,7 @@ function MaxPainCard({ date, underlying }: { date: string; underlying: string })
               Max pain strike
             </div>
             <div className="font-mono text-xl font-bold text-primary">
-              {mp.max_pain_strike.toLocaleString("en-IN")}
+              {mp.max_pain_strike.toLocaleString("en-US")}
             </div>
           </div>
         )}
@@ -1555,7 +1555,7 @@ function OiChangeByStrikeCard({ date, underlying }: { date: string; underlying: 
               Biggest move
             </div>
             <div className="font-mono text-xl font-bold text-warning">
-              {peak.strike.toLocaleString("en-IN")}
+              {peak.strike.toLocaleString("en-US")}
             </div>
           </div>
         )}
@@ -1625,7 +1625,7 @@ function IntradayOiCard({ underlying }: { underlying: string }) {
     return data.map((p) => ({
       // Render HH:MM in IST for the x-axis tick. Backend ships ISO
       // with timezone offset; trust the browser to format locally.
-      time: new Date(p.ts).toLocaleTimeString("en-IN", {
+      time: new Date(p.ts).toLocaleTimeString("en-US", {
         hour: "2-digit", minute: "2-digit", hour12: false,
       }),
       "Call OI": p.call_oi_total,

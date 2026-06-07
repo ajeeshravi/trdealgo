@@ -16,7 +16,7 @@ import useSWR from "swr";
 import toast from "react-hot-toast";
 import { api } from "@/lib/api";
 import { getStream } from "@/lib/ws";
-import { fmtExpiry, fmtINR, fmtTs } from "@/lib/fmt";
+import { fmtExpiry, fmtUSD, fmtTs } from "@/lib/fmt";
 import { useMarketPollInterval } from "@/lib/marketHours";
 import { ExchangeSymbolPicker } from "@/components/ExchangeSymbolPicker";
 import { TimezoneSelector } from "@/components/TimezoneSelector";
@@ -260,9 +260,9 @@ export default function FeedPage() {
               return (
                 <tr key={r.internal_symbol}>
                   <SymbolCells row={r} showFno={showFno} />
-                  <td className="font-mono">{t ? fmtINR(t.ltp, 2) : "—"}</td>
-                  <td>{t?.bid != null ? fmtINR(t.bid, 2) : "—"}</td>
-                  <td>{t?.ask != null ? fmtINR(t.ask, 2) : "—"}</td>
+                  <td className="font-mono">{t ? fmtUSD(t.ltp, 2) : "—"}</td>
+                  <td>{t?.bid != null ? fmtUSD(t.bid, 2) : "—"}</td>
+                  <td>{t?.ask != null ? fmtUSD(t.ask, 2) : "—"}</td>
                   <td>{t?.oi ?? "—"}</td>
                   <td>{t?.v ?? "—"}</td>
                   <td className="text-xs">{t ? fmtTs(t.ts, timezone) : "waiting…"}</td>
@@ -297,7 +297,7 @@ export default function FeedPage() {
               {t.option_type && <span className="w-10 text-muted-foreground">{t.option_type}</span>}
               {t.expiry && <span className="w-28 text-muted-foreground">{fmtExpiry(t.expiry)}</span>}
               {t.strike != null && <span className="w-16 text-muted-foreground">{t.strike}</span>}
-              <span className="w-20 text-right text-primary">{fmtINR(t.ltp, 2)}</span>
+              <span className="w-20 text-right text-primary">{fmtUSD(t.ltp, 2)}</span>
               {t.v != null && <span className="text-muted-foreground">vol {t.v}</span>}
             </div>
           ))}

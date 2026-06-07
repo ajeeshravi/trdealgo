@@ -179,9 +179,9 @@ export default function MarketSentimentWidget({ onCardClick }: Props) {
 
 /**
  * FII/DII flow card — special layout because the value is two numbers
- * (FII + DII) of widely varying magnitudes ("FII -₹18,420 Cr" can
- * overflow the tile while DII shows "+₹2 Cr"). Renders both rows in a
- * compact mono font with abbreviated magnitudes (₹12.3K Cr → "12.3K")
+ * (FII + DII) of widely varying magnitudes ("FII -$18,420 Cr" can
+ * overflow the tile while DII shows "+$2 Cr"). Renders both rows in a
+ * compact mono font with abbreviated magnitudes ($12.3K Cr → "12.3K")
  * so the tile keeps the same visual weight as the other three.
  */
 function FiiDiiCard({
@@ -197,9 +197,9 @@ function FiiDiiCard({
     if (n === undefined || Number.isNaN(n)) return "—";
     const abs = Math.abs(n);
     const sign = n >= 0 ? "+" : "-";
-    if (abs >= 10_000) return `${sign}₹${(abs / 1000).toFixed(1)}K Cr`;
-    if (abs >= 1_000) return `${sign}₹${abs.toFixed(0)} Cr`;
-    return `${sign}₹${abs.toFixed(0)} Cr`;
+    if (abs >= 10_000) return `${sign}$${(abs / 1000).toFixed(1)}K Cr`;
+    if (abs >= 1_000) return `${sign}$${abs.toFixed(0)} Cr`;
+    return `${sign}$${abs.toFixed(0)} Cr`;
   };
   return (
     <button

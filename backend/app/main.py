@@ -9,8 +9,11 @@ from __future__ import annotations
 import asyncio
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.v1.router import api_router
 from app.core.config import settings
@@ -54,6 +57,35 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(api_router, prefix=settings.API_V1_PREFIX)
+
+    # The frontend reads error toasts from `error.response.data.error.message`.
+    # FastAPI defaults to `{"detail": ...}`, so we emit both keys: `error.message`
+    # for the UI and `detail` for backward compatibility / API clients.
+    def _error_body(message: str, detail) -> dict:
+        return {"error": {"message": message}, "detail": detail}
+
+    @app.exception_handler(StarletteHTTPException)
+    async def _http_exc_handler(request: Request, exc: StarletteHTTPException):
+        detail = exc.detail
+        message = detail if isinstance(detail, str) else (
+            detail.get("reason") or detail.get("message")
+            if isinstance(detail, dict)
+            else str(detail)
+        )
+        return JSONResponse(
+            status_code=exc.status_code,
+            content=_error_body(message or "request failed", detail),
+            headers=getattr(exc, "headers", None),
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def _validation_exc_handler(request: Request, exc: RequestValidationError):
+        errors = exc.errors()
+        first = errors[0] if errors else {}
+        loc = ".".join(str(p) for p in first.get("loc", []) if p != "body")
+        msg = first.get("msg", "validation error")
+        message = f"{loc}: {msg}" if loc else msg
+        return JSONResponse(status_code=422, content=_error_body(message, errors))
 
     @app.get("/health")
     async def health() -> dict:
