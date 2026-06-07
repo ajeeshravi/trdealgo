@@ -10,6 +10,12 @@ from app.models.trading import (  # noqa: F401
     StrategyRun,
     Trigger,
 )
+from app.models.platform import (  # noqa: F401
+    AppSetting,
+    Notification,
+    NotificationPreference,
+    Watchlist,
+)
 from app.models.user import ApiKey, MfaSecret, Role, User, UserRole  # noqa: F401
 
 __all__ = [
@@ -27,4 +33,8 @@ __all__ = [
     "StrategyRun",
     "Trigger",
     "Backtest",
+    "Notification",
+    "NotificationPreference",
+    "Watchlist",
+    "AppSetting",
 ]
