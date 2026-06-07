@@ -37,6 +37,7 @@ class AlpacaDataProvider(MarketDataProvider):
                     "start": start.isoformat(),
                     "end": end.isoformat(),
                     "limit": 10000,
+                    "feed": settings.ALPACA_DATA_FEED,
                 },
             )
             r.raise_for_status()
@@ -59,7 +60,10 @@ class AlpacaDataProvider(MarketDataProvider):
         async with httpx.AsyncClient(
             base_url=settings.ALPACA_DATA_URL, headers=self._headers, timeout=10.0
         ) as c:
-            r = await c.get(f"/v2/stocks/{symbol}/quotes/latest")
+            r = await c.get(
+                f"/v2/stocks/{symbol}/quotes/latest",
+                params={"feed": settings.ALPACA_DATA_FEED},
+            )
             r.raise_for_status()
             q = r.json()["quote"]
             return Quote(
