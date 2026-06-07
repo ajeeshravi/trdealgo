@@ -20,11 +20,8 @@ from typing import Any
 
 import pandas as pd
 
-from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.logging import get_logger
-from app.market_data.engine import MarketDataEngine
-from app.market_data.providers import AlpacaDataProvider, PolygonDataProvider
 from app.strategies.base import SignalAction, StrategyContext
 from app.strategies.nocode import NoCodeStrategy
 
@@ -88,15 +85,6 @@ def evaluate_paper_tick(
             "last_price": last_price}
 
 
-def _engine() -> MarketDataEngine:
-    provider = PolygonDataProvider() if settings.POLYGON_API_KEY else AlpacaDataProvider()
-    return MarketDataEngine(provider)
-
-
-def _vendor_configured() -> bool:
-    return bool(settings.POLYGON_API_KEY or settings.ALPACA_API_KEY)
-
-
 def _bars_to_df(bars: list) -> pd.DataFrame:
     rows = [
         {"ts": b.ts, "open": float(b.open), "high": float(b.high), "low": float(b.low),
@@ -114,10 +102,7 @@ async def tick_all() -> str:
     from sqlalchemy import select
 
     from app.models.trading import Strategy, StrategyLog, StrategyRun
-
-    if not _vendor_configured():
-        log.info("strategy_engine.skip", reason="no market-data vendor configured")
-        return "no_vendor"
+    from app.services.market_source import data_engine_for_user
 
     async with SessionLocal() as db:
         runs = (
@@ -128,7 +113,6 @@ async def tick_all() -> str:
         if not runs:
             return "no_active_runs"
 
-        engine = _engine()
         ticked = 0
         for run in runs:
             strategy = await db.get(Strategy, run.strategy_id)
@@ -145,6 +129,15 @@ async def tick_all() -> str:
                     strategy_id=strategy.id, run_id=str(run.id), kind="run", level="warn",
                     message="Live order routing is not enabled — connect a broker or use a "
                             "paper run. Signals are not being placed as real orders.",
+                ))
+                continue
+
+            engine = await data_engine_for_user(db, strategy.user_id)
+            if engine is None:
+                db.add(StrategyLog(
+                    strategy_id=strategy.id, run_id=str(run.id), kind="run", level="warn",
+                    message="No market-data source — connect an Alpaca account to feed "
+                            "this paper run.",
                 ))
                 continue
 

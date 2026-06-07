@@ -44,35 +44,51 @@ router = APIRouter(tags=["brokers"])
 # `secret` fields are never returned in plaintext on the list endpoints; the
 # edit dialog fetches non-secret values via ?include_secrets=true and shows a
 # "(stored)" hint for secret ones.
+_ALPACA_SETUP_FIELDS = [
+    {
+        "name": "api_key",
+        "label": "API Key ID",
+        "type": "text",
+        "required": True,
+        "placeholder": "PK… / AK…",
+        "secret": True,
+    },
+    {
+        "name": "api_secret",
+        "label": "API Secret Key",
+        "type": "password",
+        "required": True,
+        "secret": True,
+    },
+]
+
 BROKER_TYPES: list[dict] = [
     {
+        "broker": "alpaca_paper",
+        "display_name": "Alpaca — Paper Trading",
+        "summary": "Risk-free paper trading + market data. Use your Alpaca PAPER API keys.",
+        "auth_kind": "long_lived_token",
+        "setup_fields": _ALPACA_SETUP_FIELDS,
+        "daily_login_fields": [],
+        "oauth_url_template": None,
+        "docs_url": "https://docs.alpaca.markets/docs/paper-trading",
+        "notes": [
+            "Generate PAPER keys from the Alpaca dashboard (paper keys start with PK).",
+            "These keys also power live prices and backtests across the app.",
+        ],
+    },
+    {
         "broker": "alpaca",
-        "display_name": "Alpaca",
+        "display_name": "Alpaca — Live",
         "summary": "Commission-free US stocks, ETFs and options via REST API keys.",
         "auth_kind": "long_lived_token",
-        "setup_fields": [
-            {
-                "name": "api_key",
-                "label": "API Key ID",
-                "type": "text",
-                "required": True,
-                "placeholder": "PK… / AK…",
-                "secret": True,
-            },
-            {
-                "name": "api_secret",
-                "label": "API Secret Key",
-                "type": "password",
-                "required": True,
-                "secret": True,
-            },
-        ],
+        "setup_fields": _ALPACA_SETUP_FIELDS,
         "daily_login_fields": [],
         "oauth_url_template": None,
         "docs_url": "https://docs.alpaca.markets/",
         "notes": [
-            "Generate keys from the Alpaca dashboard (paper or live).",
-            "Paper vs. live is chosen per strategy run, not on the account.",
+            "Use your LIVE Alpaca keys (they start with AK).",
+            "For risk-free testing, choose Alpaca — Paper Trading instead.",
         ],
     },
     {
@@ -253,13 +269,16 @@ async def link_account(
 ):
     if body.broker not in supported_brokers():
         raise HTTPException(400, f"unsupported broker: {body.broker}")
+    # A "*_paper" broker type is always a paper account regardless of the form's
+    # is_paper flag (the form leaves it false; the broker type is explicit).
+    is_paper = body.is_paper or body.broker.endswith("_paper")
     account = BrokerAccount(
         user_id=current.user.id,
         broker=body.broker,
         client_id=body.client_id,
         label=body.label,
         alias=body.label,
-        paper=body.is_paper,
+        paper=is_paper,
         is_active=True,
         credentials_enc=encrypt_secret(json.dumps(body.credentials or {})),
     )

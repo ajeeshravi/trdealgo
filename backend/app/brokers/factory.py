@@ -15,11 +15,13 @@ from app.brokers.ibkr import IBKRBroker
 # Concrete brokers available today. Future: tradier, tastytrade, tradestation, schwab.
 _REGISTRY: dict[str, type[BrokerBase]] = {
     "alpaca": AlpacaBroker,
+    "alpaca_paper": AlpacaBroker,  # same adapter, linked with paper=True
     "ibkr": IBKRBroker,
 }
 
 # Capability catalog surfaced via GET /brokers.
 CAPABILITIES: dict[str, dict[str, Any]] = {
+    "alpaca_paper": {"options": True, "futures": False, "paper": True, "status": "supported"},
     "alpaca": {"options": True, "futures": False, "paper": True, "status": "supported"},
     "ibkr": {"options": True, "futures": True, "paper": True, "status": "supported"},
     "tradier": {"status": "planned"},
