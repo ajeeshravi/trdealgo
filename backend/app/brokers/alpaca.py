@@ -48,10 +48,16 @@ class AlpacaBroker(BrokerBase):
 
     def __init__(self, credentials: dict[str, Any], **kw: Any) -> None:
         super().__init__(credentials, **kw)
+        # Route to the paper or live trading API. Alpaca paper API keys are
+        # prefixed "PK" and live keys "AK", so honour the key prefix as well as
+        # the explicit `paper` flag — the broker page links accounts with
+        # is_paper=false (paper/live is chosen per strategy run), so without the
+        # prefix check a paper key would be validated against the live endpoint
+        # and fail.
+        api_key = str(credentials.get("api_key", ""))
+        is_paper = self.paper or api_key.upper().startswith("PK")
         self._base = (
-            settings.ALPACA_BASE_URL
-            if self.paper
-            else "https://api.alpaca.markets"
+            settings.ALPACA_BASE_URL if is_paper else "https://api.alpaca.markets"
         )
         self._client: httpx.AsyncClient | None = None
 
