@@ -5,15 +5,13 @@ import { persist } from "zustand/middleware";
 export type TimezoneId = string;
 
 export const COMMON_TIMEZONES: { id: TimezoneId; label: string }[] = [
-  { id: "Asia/Kolkata",     label: "IST · Mumbai" },
+  { id: "America/New_York", label: "ET · New York" },
+  { id: "America/Chicago",  label: "CT · Chicago" },
+  { id: "America/Denver",   label: "MT · Denver" },
+  { id: "America/Los_Angeles", label: "PT · Los Angeles" },
   { id: "UTC",              label: "UTC" },
-  { id: "America/New_York", label: "New York" },
-  { id: "America/Chicago",  label: "Chicago" },
   { id: "Europe/London",    label: "London" },
   { id: "Europe/Frankfurt", label: "Frankfurt" },
-  { id: "Asia/Dubai",       label: "Dubai" },
-  { id: "Asia/Singapore",   label: "Singapore" },
-  { id: "Asia/Hong_Kong",   label: "Hong Kong" },
   { id: "Asia/Tokyo",       label: "Tokyo" },
   { id: "Australia/Sydney", label: "Sydney" },
 ];
@@ -26,7 +24,7 @@ interface PrefsState {
 export const usePrefs = create<PrefsState>()(
   persist(
     (set) => ({
-      timezone: "Asia/Kolkata",
+      timezone: "America/New_York",
       setTimezone: (tz) => set({ timezone: tz }),
     }),
     { name: "prefs" },

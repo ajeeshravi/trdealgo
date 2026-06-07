@@ -99,9 +99,9 @@ type ParticipantRow = {
 // ---------------------------------------------------------------------------
 
 function fmtCr(n: number): string {
-  // INR crores → "₹+12,346 Cr" with sign + thousands separator.
+  // INR crores → "$+12,346 Cr" with sign + thousands separator.
   const sign = n > 0 ? "+" : n < 0 ? "−" : "";
-  return `${sign}₹${Math.round(Math.abs(n)).toLocaleString("en-IN")} Cr`;
+  return `${sign}$${Math.round(Math.abs(n)).toLocaleString("en-US")} Cr`;
 }
 
 function fmtCount_short(n: number): string {
@@ -109,7 +109,7 @@ function fmtCount_short(n: number): string {
   const sign = n < 0 ? "-" : "";
   if (abs >= 1e6) return `${sign}${(abs / 1e6).toFixed(2)}M`;
   if (abs >= 1e3) return `${sign}${(abs / 1e3).toFixed(1)}K`;
-  return n.toLocaleString("en-IN");
+  return n.toLocaleString("en-US");
 }
 
 const CATEGORY_META: Record<Category, { icon: any; color: string; label: string }> = {

@@ -2,7 +2,7 @@
 import useSWR from "swr";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { api } from "@/lib/api";
-import { fmtINR } from "@/lib/fmt";
+import { fmtUSD } from "@/lib/fmt";
 
 const fetcher = (u: string) => api.get(u).then((r) => r.data);
 
@@ -15,7 +15,7 @@ export default function AnalyticsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Analytics</h1>
       <div className="grid lg:grid-cols-3 gap-4">
-        <Stat title="60d P&L" value={fmtINR(pnl?.total_pnl ?? 0)} />
+        <Stat title="60d P&L" value={fmtUSD(pnl?.total_pnl ?? 0)} />
         <Stat title="Fill ratio (30d)" value={`${fill?.fill_ratio_pct ?? 0}%`} />
         <Stat title="Latency p95" value={`${lat?.p95_ms ?? 0} ms`} />
       </div>

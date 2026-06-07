@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { api } from "@/lib/api";
-import { fmtINR } from "@/lib/fmt";
+import { fmtUSD } from "@/lib/fmt";
 
 const fetcher = (u: string) => api.get(u).then((r) => r.data);
 
@@ -76,7 +76,7 @@ function BacktestsPageInner() {
                 <td className="text-xs">{b.from_date} → {b.to_date}</td>
                 <td>{b.timeframe}</td>
                 <td>{b.status}</td>
-                <td className={(b.summary?.total_pnl ?? 0) >= 0 ? "text-primary" : "text-danger"}>{fmtINR(b.summary?.total_pnl)}</td>
+                <td className={(b.summary?.total_pnl ?? 0) >= 0 ? "text-primary" : "text-danger"}>{fmtUSD(b.summary?.total_pnl)}</td>
                 <td>{b.summary?.win_rate_pct ?? "—"}</td>
                 <td>{b.summary?.sharpe ?? "—"}</td>
                 <td>{b.summary?.max_drawdown_pct ?? "—"}</td>

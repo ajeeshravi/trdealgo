@@ -626,7 +626,7 @@ export function ExchangeSymbolPicker({
                 {strikes.map((s) => (
                   <option key={s} value={s}>
                     {/* Display whole strikes as integers, fractional as-is. */}
-                    {s === Math.trunc(s) ? s.toLocaleString("en-IN") : s}
+                    {s === Math.trunc(s) ? s.toLocaleString("en-US") : s}
                   </option>
                 ))}
               </select>

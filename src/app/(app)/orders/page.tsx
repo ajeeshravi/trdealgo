@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { Plus, Pin, PinOff, XCircle, Plug } from "lucide-react";
 import { api } from "@/lib/api";
-import { fmtExpiry, fmtINR, prettyError } from "@/lib/fmt";
+import { fmtExpiry, fmtUSD, prettyError } from "@/lib/fmt";
 import { cn } from "@/lib/utils";
 import { useMarketPollInterval } from "@/lib/marketHours";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -138,7 +138,7 @@ export default function OrdersPage() {
       const ok = await confirm({
         title: `Cancel trigger for ${label}?`,
         message:
-          `Drops the watching trigger at ₹${Number(o.trigger_price ?? 0).toFixed(2)}. ` +
+          `Drops the watching trigger at $${Number(o.trigger_price ?? 0).toFixed(2)}. ` +
           `No broker order will be placed if the LTP later crosses. ` +
           `If this is an ENTRY trigger, its SL and Target are also cancelled.`,
         confirmLabel: "Cancel trigger",
@@ -262,15 +262,15 @@ export default function OrdersPage() {
                   <td className="font-mono">{o.qty}</td>
                   <td className="font-mono">{o.filled_qty}</td>
                   <td>{o.order_type}</td>
-                  <td className="font-mono">{fmtINR(o.price)}</td>
-                  <td className="font-mono">{fmtINR(o.avg_price)}</td>
+                  <td className="font-mono">{fmtUSD(o.price)}</td>
+                  <td className="font-mono">{fmtUSD(o.avg_price)}</td>
                   <td>
                     {o.managed_trigger_id ? (
                       <span
                         className="pill bg-primary/15 text-primary font-mono"
                         title={
                           `Client-side trigger — the broker order is placed only when ` +
-                          `LTP crosses ${fmtINR(o.trigger_price ?? 0)}. State: ${o.managed_trigger_state ?? "ARMED"}.`
+                          `LTP crosses ${fmtUSD(o.trigger_price ?? 0)}. State: ${o.managed_trigger_state ?? "ARMED"}.`
                         }
                       >
                         {o.managed_trigger_state ?? "ARMED"}
@@ -391,7 +391,7 @@ function OrderDetail({
         {o.segment && <DetailRow label="Segment" value={o.segment} />}
         {o.option_type && <DetailRow label="Option type" value={o.option_type} />}
         {o.expiry && <DetailRow label="Expiry" value={fmtExpiry(o.expiry)} mono />}
-        {o.strike != null && <DetailRow label="Strike" value={fmtINR(o.strike)} mono />}
+        {o.strike != null && <DetailRow label="Strike" value={fmtUSD(o.strike)} mono />}
         <DetailRow
           label="Side"
           value={o.side}
@@ -403,11 +403,11 @@ function OrderDetail({
         <DetailRow label="Order type" value={o.order_type} />
         <DetailRow label="Product" value={o.product} />
         {o.variety && <DetailRow label="Variety" value={o.variety} />}
-        {o.price != null && <DetailRow label="Price" value={fmtINR(o.price)} mono />}
+        {o.price != null && <DetailRow label="Price" value={fmtUSD(o.price)} mono />}
         {o.trigger_price != null && (
-          <DetailRow label="Trigger price" value={fmtINR(o.trigger_price)} mono />
+          <DetailRow label="Trigger price" value={fmtUSD(o.trigger_price)} mono />
         )}
-        {o.avg_price != null && <DetailRow label="Avg fill price" value={fmtINR(o.avg_price)} mono />}
+        {o.avg_price != null && <DetailRow label="Avg fill price" value={fmtUSD(o.avg_price)} mono />}
         {o.broker_order_id && (
           <DetailRow label="Broker order ID" value={o.broker_order_id} mono />
         )}

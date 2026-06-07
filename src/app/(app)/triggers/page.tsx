@@ -162,7 +162,7 @@ export default function TriggersPage() {
 
   async function cancelOne(t: Trigger) {
     const lines: string[] = [
-      `${prettySymbol(t.internal_symbol)} · ${t.side} ${t.qty} @ trigger ₹${Number(t.trigger_price).toFixed(2)}`,
+      `${prettySymbol(t.internal_symbol)} · ${t.side} ${t.qty} @ trigger $${Number(t.trigger_price).toFixed(2)}`,
     ];
     if (t.role === "ENTRY") {
       lines.push(
@@ -431,16 +431,16 @@ function TriggerRow({
         {t.qty}
       </td>
       <td className="px-3 py-2 text-right font-mono">
-        ₹{Number(t.trigger_price).toFixed(2)}
+        ${Number(t.trigger_price).toFixed(2)}
         <div className="text-[10px] text-muted-foreground">
           {t.direction === "UP" ? "≥" : "≤"}
         </div>
       </td>
       <td className="px-3 py-2 text-right font-mono">
-        {t.limit_price != null ? `₹${Number(t.limit_price).toFixed(2)}` : "MKT"}
+        {t.limit_price != null ? `$${Number(t.limit_price).toFixed(2)}` : "MKT"}
       </td>
       <td className="px-3 py-2 text-right font-mono">
-        {ltp != null ? `₹${ltp.toFixed(2)}` : "—"}
+        {ltp != null ? `$${ltp.toFixed(2)}` : "—"}
       </td>
       <td className={cn(
         "px-3 py-2 text-right font-mono",

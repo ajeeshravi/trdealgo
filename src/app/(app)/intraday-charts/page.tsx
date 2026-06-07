@@ -309,7 +309,7 @@ export default function IntradayChartsPage() {
               <SelectContent>
                 {strikes.map((k) => (
                   <SelectItem key={k} value={String(k)}>
-                    {k.toLocaleString("en-IN")}
+                    {k.toLocaleString("en-US")}
                     {atmStrike != null && k === atmStrike && (
                       <span className="ml-2 text-[10px] text-primary">ATM</span>
                     )}
@@ -352,7 +352,7 @@ export default function IntradayChartsPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
               <XAxis dataKey="t" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
               <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-              <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number) => v.toLocaleString("en-IN")} />
+              <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number) => v.toLocaleString("en-US")} />
               <Line type="monotone" dataKey="ceOi" stroke="hsl(var(--loss))" strokeWidth={2} dot={false} name="CE OI" />
               <Line type="monotone" dataKey="peOi" stroke="hsl(var(--profit))" strokeWidth={2} dot={false} name="PE OI" />
             </LineChart>
@@ -363,7 +363,7 @@ export default function IntradayChartsPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
               <XAxis dataKey="t" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
               <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-              <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number) => v.toLocaleString("en-IN")} />
+              <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number) => v.toLocaleString("en-US")} />
               <Bar dataKey="ceChgOi" fill="hsl(var(--loss))" name="CE ΔOI" />
               <Bar dataKey="peChgOi" fill="hsl(var(--profit))" name="PE ΔOI" />
             </BarChart>
@@ -452,7 +452,7 @@ export default function IntradayChartsPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                   <XAxis dataKey="t" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
                   <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                  <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number) => v.toLocaleString("en-IN")} />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number) => v.toLocaleString("en-US")} />
                   <Line type="monotone" dataKey="call_oi" stroke="hsl(var(--loss))" strokeWidth={2} dot={false} name="Call OI" />
                   <Line type="monotone" dataKey="put_oi" stroke="hsl(var(--profit))" strokeWidth={2} dot={false} name="Put OI" />
                 </LineChart>

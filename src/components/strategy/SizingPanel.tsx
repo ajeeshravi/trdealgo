@@ -114,7 +114,7 @@ export function SizingPanel({
 
       {value.mode === "CAPITAL_PER_SYMBOL" && (
         <div>
-          <div className="label mb-1">Capital per symbol (₹)</div>
+          <div className="label mb-1">Capital per symbol ($)</div>
           <input
             className="input"
             type="number"

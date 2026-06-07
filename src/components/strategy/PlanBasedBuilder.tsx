@@ -229,7 +229,7 @@ export function PlanBasedBuilder({ value, onChange }: Props) {
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="text-sm text-muted-foreground">Capital (₹)</label>
+          <label className="text-sm text-muted-foreground">Capital ($)</label>
           <input
             type="number"
             min={1}

@@ -4,7 +4,7 @@ import useSWR from "swr";
 import toast from "react-hot-toast";
 import { XCircle, Plug } from "lucide-react";
 import { api } from "@/lib/api";
-import { fmtExpiry, fmtINR } from "@/lib/fmt";
+import { fmtExpiry, fmtUSD } from "@/lib/fmt";
 import { useLivePrices } from "@/lib/useLivePrices";
 import { cn } from "@/lib/utils";
 import { useMarketPollInterval } from "@/lib/marketHours";
@@ -319,7 +319,7 @@ export default function PositionsPage() {
       title: `Close ${openRaw.length} open position${openRaw.length === 1 ? "" : "s"}?`,
       message:
         `For every open position this sends a MARKET order in the opposite direction to the SAME broker the position is held on (paper positions stay on paper, live stays on live). ` +
-        `Net unrealised P&L right now: ${fmtINR(totalUnrealized)}. ` +
+        `Net unrealised P&L right now: ${fmtUSD(totalUnrealized)}. ` +
         `Market orders execute at current liquidity — slippage applies. ` +
         `Type CLOSE ALL to confirm.`,
       confirmLabel: "Send square-off orders",
@@ -373,7 +373,7 @@ export default function PositionsPage() {
               <>
                 {" · "}
                 <span className={totalUnrealized >= 0 ? "text-profit" : "text-loss"}>
-                  Unrealised {fmtINR(totalUnrealized)}
+                  Unrealised {fmtUSD(totalUnrealized)}
                 </span>
               </>
             )}
@@ -381,7 +381,7 @@ export default function PositionsPage() {
               <>
                 {" · "}
                 <span className={totalRealized >= 0 ? "text-profit" : "text-loss"}>
-                  Realised {fmtINR(totalRealized)}
+                  Realised {fmtUSD(totalRealized)}
                 </span>
               </>
             )}
@@ -514,13 +514,13 @@ export default function PositionsPage() {
                   >
                     {p.qty > 0 ? `+${p.qty}` : p.qty}
                   </td>
-                  <td className="font-mono">{fmtINR(p.avg_price)}</td>
-                  <td className="font-mono">{fmtINR(p.last_price)}</td>
+                  <td className="font-mono">{fmtUSD(p.avg_price)}</td>
+                  <td className="font-mono">{fmtUSD(p.last_price)}</td>
                   <td className={cn("font-mono", p.unrealized_pnl >= 0 ? "text-profit" : "text-loss")}>
-                    {fmtINR(p.unrealized_pnl)}
+                    {fmtUSD(p.unrealized_pnl)}
                   </td>
                   <td className={cn("font-mono", p.realized_pnl >= 0 ? "text-profit" : "text-loss")}>
-                    {fmtINR(p.realized_pnl)}
+                    {fmtUSD(p.realized_pnl)}
                   </td>
                   <td>
                     <button
@@ -664,7 +664,7 @@ function PositionDetail({
         {p.option_type && <DetailRow label="Option type" value={p.option_type} />}
         {p.expiry && <DetailRow label="Expiry" value={fmtExpiry(p.expiry)} mono />}
         {p.strike != null && (
-          <DetailRow label="Strike" value={fmtINR(p.strike)} mono />
+          <DetailRow label="Strike" value={fmtUSD(p.strike)} mono />
         )}
         <DetailRow
           label="Strategy"
@@ -674,17 +674,17 @@ function PositionDetail({
         <DetailRow label="Product" value={p.product} />
         <DetailRow label="Quantity" value={String(p.qty)} mono />
         <DetailRow label="Side" value={p.qty > 0 ? "LONG" : p.qty < 0 ? "SHORT" : "FLAT"} />
-        <DetailRow label="Avg price" value={fmtINR(p.avg_price)} mono />
-        <DetailRow label="LTP" value={fmtINR(p.last_price)} mono />
+        <DetailRow label="Avg price" value={fmtUSD(p.avg_price)} mono />
+        <DetailRow label="LTP" value={fmtUSD(p.last_price)} mono />
         <DetailRow
           label="Unrealised P&L"
-          value={fmtINR(p.unrealized_pnl)}
+          value={fmtUSD(p.unrealized_pnl)}
           mono
           className={p.unrealized_pnl >= 0 ? "text-profit" : "text-loss"}
         />
         <DetailRow
           label="Realised P&L"
-          value={fmtINR(p.realized_pnl)}
+          value={fmtUSD(p.realized_pnl)}
           mono
           className={p.realized_pnl >= 0 ? "text-profit" : "text-loss"}
         />

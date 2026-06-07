@@ -60,7 +60,7 @@ export default function TradeJournalPage() {
         <div className="card">
           <div className="text-xs text-muted-foreground uppercase">Total P&L</div>
           <div className={cn("font-mono text-2xl font-bold mt-1", totalPnl >= 0 ? "text-profit" : "text-loss")}>
-            ₹{totalPnl.toLocaleString()}
+            ${totalPnl.toLocaleString()}
           </div>
         </div>
         <div className="card">
@@ -104,7 +104,7 @@ export default function TradeJournalPage() {
                 <td className="font-mono text-xs">{e.date}</td>
                 <td className="font-mono font-semibold">{e.symbol}</td>
                 <td className={cn("font-mono", e.side === "BUY" ? "text-profit" : "text-loss")}>{e.side}</td>
-                <td className={cn("font-mono", e.pnl >= 0 ? "text-profit" : "text-loss")}>₹{e.pnl.toLocaleString()}</td>
+                <td className={cn("font-mono", e.pnl >= 0 ? "text-profit" : "text-loss")}>${e.pnl.toLocaleString()}</td>
                 <td><span className={cn("pill font-mono", EMOTION_COLOR[e.emotion])}>{e.emotion}</span></td>
                 <td className="text-xs text-muted-foreground">{e.notes}</td>
                 <td>

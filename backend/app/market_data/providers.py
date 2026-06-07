@@ -20,10 +20,10 @@ _TF_ALPACA = {"1m": "1Min", "5m": "5Min", "15m": "15Min", "1h": "1Hour", "1d": "
 class AlpacaDataProvider(MarketDataProvider):
     name = "alpaca"
 
-    def __init__(self, api_key: str = "", api_secret: str = "") -> None:
+    def __init__(self, api_key: str | None = None, api_secret: str | None = None) -> None:
         self._headers = {
-            "APCA-API-KEY-ID": api_key,
-            "APCA-API-SECRET-KEY": api_secret,
+            "APCA-API-KEY-ID": api_key or settings.ALPACA_API_KEY,
+            "APCA-API-SECRET-KEY": api_secret or settings.ALPACA_API_SECRET,
         }
 
     async def get_bars(self, symbol, timeframe, start, end) -> list[Bar]:

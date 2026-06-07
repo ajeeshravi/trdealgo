@@ -201,7 +201,7 @@ export default function StockHeatmap({ index, open, onClose }: Props) {
               <DialogTitle className="font-mono text-base">{index.name}</DialogTitle>
               {index.value != null ? (
                 <span className="text-sm font-mono">
-                  ₹{index.value.toLocaleString("en-IN", { maximumFractionDigits: 2 })}{" "}
+                  ${index.value.toLocaleString("en-US", { maximumFractionDigits: 2 })}{" "}
                   {index.change != null && index.change_pct != null && (
                     <span className={index.change >= 0 ? "text-profit" : "text-loss"}>
                       {index.change >= 0 ? "+" : ""}{index.change.toFixed(2)} (
@@ -359,14 +359,14 @@ export default function StockHeatmap({ index, open, onClose }: Props) {
                                 <>
                                   <div className="pt-1 space-y-1">
                                     <div className="font-mono text-sm">
-                                      LTP: ₹{rect.stock.ltp!.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+                                      LTP: ${rect.stock.ltp!.toLocaleString("en-US", { maximumFractionDigits: 2 })}
                                     </div>
                                     <div className={`font-mono text-xs ${cp >= 0 ? "text-profit" : "text-loss"}`}>
                                       {cp >= 0 ? "+" : ""}{cp.toFixed(2)}%
                                       {rect.stock.prev_close != null && (
                                         <>
                                           {" "}
-                                          (₹{rect.stock.prev_close.toLocaleString("en-IN", { maximumFractionDigits: 2 })})
+                                          (${rect.stock.prev_close.toLocaleString("en-US", { maximumFractionDigits: 2 })})
                                         </>
                                       )}
                                     </div>
@@ -374,18 +374,18 @@ export default function StockHeatmap({ index, open, onClose }: Props) {
                                   <div className="grid grid-cols-3 gap-2 pt-1 text-[10px] font-mono">
                                     <div>
                                       <div className="text-muted-foreground">Open</div>
-                                      <div>{rect.stock.open != null ? `₹${rect.stock.open.toLocaleString("en-IN")}` : "-"}</div>
+                                      <div>{rect.stock.open != null ? `$${rect.stock.open.toLocaleString("en-US")}` : "-"}</div>
                                     </div>
                                     <div>
                                       <div className="text-muted-foreground">High</div>
                                       <div className="text-profit">
-                                        {rect.stock.high != null ? `₹${rect.stock.high.toLocaleString("en-IN")}` : "-"}
+                                        {rect.stock.high != null ? `$${rect.stock.high.toLocaleString("en-US")}` : "-"}
                                       </div>
                                     </div>
                                     <div>
                                       <div className="text-muted-foreground">Low</div>
                                       <div className="text-loss">
-                                        {rect.stock.low != null ? `₹${rect.stock.low.toLocaleString("en-IN")}` : "-"}
+                                        {rect.stock.low != null ? `$${rect.stock.low.toLocaleString("en-US")}` : "-"}
                                       </div>
                                     </div>
                                   </div>

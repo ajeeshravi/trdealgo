@@ -823,7 +823,7 @@ export default function WatchlistPage() {
                       )}
                     >
                       {r.ltp != null
-                        ? `₹${r.ltp.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        ? `$${r.ltp.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                         : "—"}
                     </td>
                     <td className="py-3 px-3 text-right">
@@ -850,13 +850,13 @@ export default function WatchlistPage() {
                       )}
                     </td>
                     <td className="py-3 px-3 text-right text-muted-foreground tabular-nums hidden md:table-cell">
-                      {r.open != null ? `₹${r.open.toLocaleString("en-IN")}` : "—"}
+                      {r.open != null ? `$${r.open.toLocaleString("en-US")}` : "—"}
                     </td>
                     <td className="py-3 px-3 text-right text-muted-foreground tabular-nums hidden md:table-cell">
-                      {r.high != null ? `₹${r.high.toLocaleString("en-IN")}` : "—"}
+                      {r.high != null ? `$${r.high.toLocaleString("en-US")}` : "—"}
                     </td>
                     <td className="py-3 px-3 text-right text-muted-foreground tabular-nums hidden md:table-cell">
-                      {r.low != null ? `₹${r.low.toLocaleString("en-IN")}` : "—"}
+                      {r.low != null ? `$${r.low.toLocaleString("en-US")}` : "—"}
                     </td>
                     <td className="py-2.5 px-2">
                       <div className="flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">

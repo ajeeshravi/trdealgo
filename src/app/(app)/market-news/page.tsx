@@ -83,7 +83,7 @@ export default function MarketNewsPage() {
         <div className="space-y-3">
           {filtered.map((n, i) => {
             const time = n.timestamp
-              ? new Date(n.timestamp).toLocaleString("en-IN", {
+              ? new Date(n.timestamp).toLocaleString("en-US", {
                   day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
                 })
               : "—";
