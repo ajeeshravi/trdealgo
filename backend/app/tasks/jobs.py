@@ -31,3 +31,13 @@ def run_backtest(self, backtest_id: str) -> str:  # noqa: ANN001
 
     log.info("task.run_backtest", backtest_id=backtest_id)
     return asyncio.run(run_backtest_for(backtest_id))
+
+
+@celery_app.task(name="app.tasks.jobs.tick_strategies")
+def tick_strategies() -> str:
+    """Evaluate active strategy runs (paper-mode fills + logs + P&L)."""
+    import asyncio
+
+    from app.services.strategy_engine import tick_all
+
+    return asyncio.run(tick_all())

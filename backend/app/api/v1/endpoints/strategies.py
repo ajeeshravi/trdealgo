@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import CurrentUser, require_roles
 from app.core.database import get_db
-from app.models.trading import Strategy, StrategyRun
+from app.models.trading import Strategy, StrategyLog, StrategyRun
 from app.strategies.registry import catalog, validate_custom_code
 
 router = APIRouter(prefix="/strategies", tags=["strategies"])
@@ -304,9 +304,8 @@ async def list_runs(
 
 
 # ---------------------------------------------------------------------------
-# Monitoring surfaces. These return empty/derived data until the live
-# strategy engine is wired up (a later phase) — the detail page renders a
-# calm "no data" state rather than 404-ing.
+# Monitoring surfaces. Logs are produced by the strategy engine; indicators /
+# plan-preview remain derived stubs (the detail page renders a calm state).
 # ---------------------------------------------------------------------------
 @router.get("/{strategy_id}/logs")
 async def strategy_logs(
@@ -315,8 +314,29 @@ async def strategy_logs(
     current: CurrentUser = Depends(require_roles("admin", "trader", "viewer")),
     db: AsyncSession = Depends(get_db),
 ):
-    await _get_owned(db, strategy_id, current.user.id)
-    return []
+    s = await _get_owned(db, strategy_id, current.user.id)
+    rows = (
+        await db.execute(
+            select(StrategyLog)
+            .where(StrategyLog.strategy_id == s.id)
+            .order_by(StrategyLog.created_at.desc())
+            .limit(min(limit, 1000))
+        )
+    ).scalars().all()
+    return [
+        {
+            "ts": r.created_at.isoformat() if r.created_at else None,
+            "kind": r.kind,
+            "level": r.level,
+            "message": r.message,
+            "run_id": r.run_id,
+            "signal_id": None,
+            "order_id": None,
+            "internal_symbol": r.internal_symbol,
+            "meta": r.meta or {},
+        }
+        for r in rows
+    ]
 
 
 @router.get("/{strategy_id}/indicators")

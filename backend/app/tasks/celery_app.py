@@ -31,4 +31,8 @@ celery_app.conf.beat_schedule = {
         "task": "app.tasks.jobs.run_eod_analytics",
         "schedule": 60.0 * 60,  # hourly; gate to market close internally
     },
+    "tick-strategies": {
+        "task": "app.tasks.jobs.tick_strategies",
+        "schedule": 60.0,  # evaluate active strategy runs every minute
+    },
 }

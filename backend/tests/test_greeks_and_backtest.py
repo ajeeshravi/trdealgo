@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 
-from app.backtesting.engine import Backtester, BacktestConfig
+from app.backtesting.engine import BacktestConfig, Backtester
 from app.backtesting.metrics import compute, monte_carlo
 from app.options.greeks import black_scholes, implied_volatility
 from app.options.iv import iv_percentile, iv_rank
